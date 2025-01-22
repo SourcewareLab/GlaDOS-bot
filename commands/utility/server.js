@@ -1,7 +1,7 @@
-import { SlashCommanderBuilder } from 'discord.js';
+import { SlashCommandBuilder } from 'discord.js';
 
 export const command = {
-    data: new SlashCommanderBuilder()
+    data: new SlashCommandBuilder()
         .setName('server')
         .setDescription('Provides information about the server.'),
     async execute (interaction) {
