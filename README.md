@@ -11,7 +11,7 @@ Follow the steps below to contribute effectively:
 
 1. **Fork the Repository:** Start by forking the repository to your own GitHub account.
 
-2. **Clone the Repository:** Clone the forked repository to your local development environment.
+2. **Clone the Repository:** Clone the forked repository to your local development environment.<br><br>
 `git clone https://github.com/your-username/GlaDOS-bot.git`
 
 3. **Create a New Branch Locally:** Create a branch for your feature or fix. Name your branch in a way that describes the purpose of your changes. For example:
@@ -61,5 +61,5 @@ Example Commit Messages:
 
 Thank you for being a valuable part of our community! 🎉
 
-
+Join our Discord community for more discussions and updates!
 <a href="https://discord.gg/X69MUr2DKm" title="Discord server invite link"><img src="https://freelogopng.com/images/all_img/1691730767discord-logo-transparent.png" width="25"></a>
