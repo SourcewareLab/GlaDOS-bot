@@ -1,3 +1,7 @@
+# GlaDOS Community Bot
+# 🤖 About
+
+The GlaDOS Community Bot is a powerful administration tool designed to streamline server management and enhance the community experience. Built with Node.js and Discord.js, it provides robust functionality for both moderators and members, focusing on efficient server management and community engagement.
 
 # 🚀 Contribution Workflow
 
