@@ -25,11 +25,12 @@ for (const folder of commandFolders) {
     const { command } = await import(filePath);
 
     if ('data' in command && 'execute' in command) {
-      client.commands.set(command.data.name, command)
+      client.commands.set(command.data.name, command);
     } else {
         console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" propriety.`);
     }
   }
+  console.log(client.commands);
 }
 
 client.once(Events.ClientReady, readyClient => {
