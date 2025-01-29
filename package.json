@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "tsc && node dist/index.js",
-    "dev": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" node src/index.ts"
+    "dev": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" node src/index.ts",
+    "deploy-commands": "tsc && node dist/deploy-commands.js"
   },
   "author": "",
   "license": "ISC",
