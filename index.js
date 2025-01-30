@@ -1,4 +1,4 @@
-import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
+import { Client, Collection, Events, GatewayIntentBits, MessageFlags} from "discord.js";
 import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
