@@ -1,8 +1,12 @@
-import { Client, Collection, Events, GatewayIntentBits, MessageFlags } from "discord.js";
+import {ChatInputCommandInteraction, Client, Collection, Events, GatewayIntentBits, MessageFlags} from "discord.js";
 import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
+
+type Command = {
+  execute(interaction: ChatInputCommandInteraction): Promise<void>;
+}
 
 class ClientWithCommands extends Client {
   commands: Collection<string, unknown>
@@ -46,7 +50,7 @@ client.on(Events.InteractionCreate, async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
 
-  const command = client.commands.get(interaction.commandName);
+  const command = client.commands.get(interaction.commandName) as Command;
 
   if (!command) {
     console.error(`No command matching ${interaction.commandName} was found.`);
@@ -54,7 +58,6 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 
   try {
-    // @ts-ignore
     await command.execute(interaction);
   } catch (error) {
     console.error(error);
