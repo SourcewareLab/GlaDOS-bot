@@ -7,7 +7,9 @@
     "build": "tsc",
     "start": "tsc && node dist/index.js",
     "dev": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" node src/index.ts",
-    "deploy-commands": "tsc && node dist/deploy-commands.js"
+    "deploy-commands": "tsc && node dist/deploy-commands.js",
+    "lint": "eslint . ",
+    "lint:fix": "eslint . --fix"
   },
   "author": "",
   "license": "ISC",
@@ -18,18 +20,16 @@
     "dotenv": "^16.4.7"
   },
   "devDependencies": {
-    "@eslint/js": "^9.18.0",
+    "@eslint/js": "^9.19.0",
     "@types/node": "^22.12.0",
-    "@typescript-eslint/eslint-plugin": "^8.22.0",
-    "@typescript-eslint/parser": "^8.22.0",
     "cross-env": "^7.0.3",
     "eslint": "^9.19.0",
     "eslint-config-prettier": "^10.0.1",
-    "eslint-plugin-prettier": "^5.2.3",
     "globals": "^15.14.0",
     "prettier": "^3.4.2",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.22.0"
   }
 }
