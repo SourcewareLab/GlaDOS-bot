@@ -9,7 +9,7 @@ export const command = {
         if (!interaction.guild) {
             await interaction.reply("Something went wrong");
         } else {
-            await interaction.reply(`This server is ${interaction.guild.members} and has ${interaction.guild.memberCount} members.`);
+            await interaction.reply(`This server is ${interaction.guild.name} and has ${interaction.guild.memberCount} members.`);
         }
     }
 
