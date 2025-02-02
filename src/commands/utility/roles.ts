@@ -1,6 +1,7 @@
 import {
   ChatInputCommandInteraction,
   EmbedBuilder,
+  MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
 
@@ -14,7 +15,7 @@ export const command = {
     if (!interaction.guild) {
       await interaction.reply({
         content: "This command can only be used within a server.",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
