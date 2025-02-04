@@ -1,19 +1,31 @@
 name: Restrict merges to main
 
+# Trigger on either pull_request (internal) OR pull_request_target (external/forked)
 on:
   pull_request:
-    branches: [main] # Triggers only when a PR targets `main`
+    branches: [main]
+  pull_request_target:
+    branches: [main]
 
 jobs:
   restrict-main-merges:
     runs-on: ubuntu-latest
     steps:
-      - name: Check if source branch is dev
+      - name: Block merges to main unless head is dev
         run: |
-          echo "Base branch: ${{ github.event.pull_request.base.ref }}"
-          echo "Head branch: ${{ github.event.pull_request.head.ref }}"
+          # Because we trigger from both events, let's confirm which event is firing
+          echo "Event name: ${{ github.event_name }}"
 
-          if [ "${{ github.event.pull_request.head.ref }}" != "dev" ]; then
-            echo "Pull requests into 'main' must originate from 'dev' branch."
+          # The PR metadata (base, head) is accessible in both events at github.event.pull_request
+          HEAD_REF="${{ github.event.pull_request.head.ref }}"
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+
+          echo "Base branch: $BASE_REF"
+          echo "Head branch: $HEAD_REF"
+
+          if [ "$HEAD_REF" != "dev" ]; then
+            echo "ERROR: Pull requests into '$BASE_REF' must come from 'dev' branch."
             exit 1
           fi
+
+          echo "✅ OK: PR is from the dev branch. Allowing merge."
