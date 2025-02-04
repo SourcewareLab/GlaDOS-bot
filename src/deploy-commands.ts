@@ -23,7 +23,7 @@ for (const folder of commandFolders) {
 
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
-		const { command } = await import(pathToFileURL(filePath));
+		const { command } = await import(pathToFileURL(filePath).toString());
 
 		if ('data' in command && 'execute' in command) {
 			commands.push(command.data.toJSON());
@@ -35,7 +35,7 @@ for (const folder of commandFolders) {
 
 
 // Construct and prepare an instance of the REST module
-const rest = new REST().setToken(token);
+const rest = new REST().setToken(token!);
 
 // and deploy your commands!
 (async () => {
@@ -44,9 +44,9 @@ const rest = new REST().setToken(token);
 
 		// The put method is used to fully refresh all commands in the guild with the current set
 		const data = await rest.put(
-			Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
+			Routes.applicationGuildCommands(CLIENT_ID!, GUILD_ID!),
 			{ body: commands },
-		);
+		) as string[]; //Temporary solution
 
 		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
 	} catch (error) {

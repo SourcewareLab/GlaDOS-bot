@@ -1,13 +1,24 @@
-import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
+import {ChatInputCommandInteraction, Client, Collection, Events, GatewayIntentBits, MessageFlags} from "discord.js";
 import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 
-// eslint-disable-next-line no-undef
+type Command = {
+  execute(interaction: ChatInputCommandInteraction): Promise<void>;
+}
+
+class ClientWithCommands extends Client {
+  commands: Collection<string, unknown>
+
+  constructor() {
+    super({intents: [GatewayIntentBits.Guilds]});
+    this.commands = new Collection();
+  }
+}
+
 const token = process.env.TOKEN;
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-client.commands = new Collection();
+const client = new ClientWithCommands();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,7 +31,7 @@ for (const folder of commandFolders) {
 
   for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
-    const { command } = await import(pathToFileURL(filePath));
+    const { command }= await import(pathToFileURL(filePath).toString());
 
     if ('data' in command && 'execute' in command) {
       client.commands.set(command.data.name, command);
@@ -38,7 +49,8 @@ client.once(Events.ClientReady, readyClient => {
 client.on(Events.InteractionCreate, async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
-  const command = interaction.client.commands.get(interaction.commandName);
+
+  const command = client.commands.get(interaction.commandName) as Command;
 
   if (!command) {
     console.error(`No command matching ${interaction.commandName} was found.`);
