@@ -1,4 +1,8 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder, MessageFlags, EmbedBuilder } from 'discord.js';
+
+//TODO: Display Name
+//TODO: Score?
+//TODO: Description
 
 export const command = {
   data: new SlashCommandBuilder()
@@ -6,6 +10,15 @@ export const command = {
     .setDescription('Provides information about the user.'),
 
   async execute(interaction: ChatInputCommandInteraction) {
+    // Ensure the command is executed in a guild
+    if (!interaction.guild) {
+      await interaction.reply({
+        content: "This command can only be used within a server.",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
     const user = interaction.user;
     const member = await interaction.guild?.members.fetch(user.id);
 
@@ -29,19 +42,42 @@ export const command = {
     const DiscordFormattedTime = getDateDifferenceFormatted(createdAt);
     const ServerFormattedTime = getDateDifferenceFormatted(serverJoined)
 
-    // Getting All Roles assigned to the user
-    const roles = member.roles.cache
-      .filter(role => role.id !== interaction.guild?.id) // Exclude @everyone
-      .map(role => role.name)
-      .join(', ') || 'No roles';
+    //Getting User Avater
+    const avatar = user.displayAvatarURL();
 
-    // Writing the Final Replu
-    await interaction.reply(`
-This command was run by ${interaction.user.username}
-Joined Discord: ${createdAt.toDateString()} ~ ${DiscordFormattedTime}
-Joined Server: ${serverJoined.toDateString()} ~ ${ServerFormattedTime}
-Roles: ${roles}      
-`);
+    // Get all roles (excluding the @everyone role)
+    const roles = interaction.guild.roles.cache
+      .filter((role) => role.id !== interaction.guild!.id)
+      // Optionally, sort roles by member count (descending)
+      .sort((a, b) => b.members.size - a.members.size);
+
+    // Build a display string for the embed.
+    const roleList = roles
+      .map((role) => {
+        const roleMention = `<@&${role.id}>`;
+        return `${roleMention}`;
+      })
+      .slice(1)
+      .join(" ");
+
+    const Description = `
+      **Joined Discord**: ${createdAt.toDateString()} ~ ${DiscordFormattedTime}
+
+      **Joined Server**: ${serverJoined.toDateString()} ~ ${ServerFormattedTime}
+
+      **Roles**: ${roleList}\n\n`.trimStart()
+
+    const embed = new EmbedBuilder()
+      .setTitle(`${member.displayName}`)
+      .setDescription(Description || "No Data Found")
+      .setThumbnail(avatar)
+      .setColor(0x2f3136) // Neutral embed color; individual role colors will show in the mentions.
+
+    // Reply with the embed and the interactive select menu
+    await interaction.reply({
+      embeds: [embed],
+      allowedMentions: { roles: [] }, // This prevents role pings
+    });
   }
 }
 
