@@ -1,4 +1,3 @@
-import {ScoreRepository} from "./repositories/score-repository.js";
 import config from "./config/database.config.js";
 import {Sequelize} from "sequelize-typescript";
 import { dirname, join } from 'path';
@@ -7,7 +6,6 @@ import { fileURLToPath } from 'url';
 export class AppDatabase {
     private static instance: AppDatabase;
     private readonly sequelize: Sequelize;
-    private scoreRepository: ScoreRepository;
 
     public static getInstance(): AppDatabase {
         if (!AppDatabase.instance) {
@@ -32,7 +30,6 @@ export class AppDatabase {
     private constructor() {
         this.sequelize = new Sequelize(config);
         this.sequelize.addModels([this.getModelPath()])
-        this.scoreRepository = new ScoreRepository(this.sequelize);
     }
 
     private getModelPath(): string {
