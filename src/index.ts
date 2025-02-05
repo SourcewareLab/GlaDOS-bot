@@ -1,4 +1,4 @@
-import {ChatInputCommandInteraction, Client, Collection, Events, GatewayIntentBits, MessageFlags} from "discord.js";
+import { ChatInputCommandInteraction, Client, Collection, Events, GatewayIntentBits, MessageFlags } from "discord.js";
 import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
@@ -12,7 +12,7 @@ class ClientWithCommands extends Client {
   commands: Collection<string, unknown>
 
   constructor() {
-    super({intents: [GatewayIntentBits.Guilds]});
+    super({ intents: [GatewayIntentBits.Guilds] });
     this.commands = new Collection();
   }
 }
@@ -31,7 +31,7 @@ for (const folder of commandFolders) {
 
   for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
-    const { command }= await import(pathToFileURL(filePath).toString());
+    const { command } = await import(pathToFileURL(filePath).toString());
 
     if ('data' in command && 'execute' in command) {
       client.commands.set(command.data.name, command);

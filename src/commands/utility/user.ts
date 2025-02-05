@@ -7,7 +7,12 @@ import { ChatInputCommandInteraction, SlashCommandBuilder, MessageFlags, EmbedBu
 export const command = {
   data: new SlashCommandBuilder()
     .setName('user')
-    .setDescription('Provides information about the user.'),
+    .setDescription('Provides information about the user.')
+    .addUserOption(option =>
+      option.setName("user")
+        .setDescription("The username to search for")
+        .setRequired(false)
+    ),
 
   async execute(interaction: ChatInputCommandInteraction) {
     // Ensure the command is executed in a guild
@@ -19,7 +24,14 @@ export const command = {
       return;
     }
 
-    const user = interaction.user;
+    const user = interaction.options.getUser('user') ?? interaction.user;
+
+    if (!user) {
+      await interaction.reply("User Not Found")
+      return
+    }
+
+    //Finding User in Guild Members
     const member = await interaction.guild?.members.fetch(user.id);
 
     // Handling the case where the user is not found and const user is null
@@ -46,10 +58,7 @@ export const command = {
     const avatar = user.displayAvatarURL();
 
     // Get all roles (excluding the @everyone role)
-    const roles = interaction.guild.roles.cache
-      .filter((role) => role.id !== interaction.guild!.id)
-      // Optionally, sort roles by member count (descending)
-      .sort((a, b) => b.members.size - a.members.size);
+    const roles = member.roles.cache.filter(role => role.name !== '@everyone');;
 
     // Build a display string for the embed.
     const roleList = roles
@@ -57,10 +66,10 @@ export const command = {
         const roleMention = `<@&${role.id}>`;
         return `${roleMention}`;
       })
-      .slice(1)
       .join(" ");
 
     const Description = `
+      
       **Joined Discord**: ${createdAt.toDateString()} ~ ${DiscordFormattedTime}
 
       **Joined Server**: ${serverJoined.toDateString()} ~ ${ServerFormattedTime}
