@@ -1,24 +1,40 @@
-import {Column, CreatedAt, DeletedAt, Model, Table, UpdatedAt} from "sequelize-typescript";
+import {
+    Column,
+    CreatedAt,
+    Default,
+    DeletedAt,
+    Model,
+    PrimaryKey,
+    Table,
+    UpdatedAt
+} from "sequelize-typescript";
+import {InferAttributes, InferCreationAttributes} from "sequelize";
 
 
 @Table({
     tableName: "users",
     modelName: "user",
 })
-class UserModel extends Model<UserModel> {
+export default class UserModel extends Model<InferAttributes<UserModel>, InferCreationAttributes<UserModel>>{
+
+    @PrimaryKey
+    @Column
+    declare discordId: string;
+
     @Column
     username!: string;
 
     @Column
-    score!: number;
+    @Default(0)
+    score?: number;
 
     @CreatedAt
     @Column
-    creationDate!: Date;
+    creationDate?: Date;
 
     @UpdatedAt
     @Column
-    updatedOn!: Date;
+    updatedOn?: Date;
 
     @DeletedAt
     @Column
