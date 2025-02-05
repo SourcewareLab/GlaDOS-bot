@@ -9,7 +9,11 @@
     "outDir": "dist",
     "sourceMap": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "noUnusedLocals": true,
+    "pretty": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]

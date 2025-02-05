@@ -15,6 +15,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@sequelize/postgres": "^7.0.0-alpha.44",
     "discord-api-types": "^0.37.118",
     "discord.js": "^14.17.3",
     "dotenv": "^16.4.7",
@@ -33,6 +34,7 @@
     "eslint-config-prettier": "^10.0.1",
     "globals": "^15.14.0",
     "prettier": "^3.4.2",
+    "sequelize-cli": "^6.6.2",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
     "typescript": "^5.7.3",
