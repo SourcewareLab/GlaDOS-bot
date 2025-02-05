@@ -1,8 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, MessageFlags, EmbedBuilder } from 'discord.js';
 
-//TODO: Display Name
 //TODO: Score?
-//TODO: Description
+//TODO: Description?
 
 export const command = {
   data: new SlashCommandBuilder()
