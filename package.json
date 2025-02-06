@@ -8,6 +8,7 @@
     "start:build": "npm run build && node dist/index.js",
     "start": "tsx src/index.ts",
     "dev": "tsx watch src/index.ts",
+    "prettier-format": "prettier --config .prettierrc \"src/**/*.ts\" --write",
     "deploy-commands": "npm run build && node dist/deploy-commands.js",
     "lint": "eslint . ",
     "lint:fix": "eslint . --fix",
