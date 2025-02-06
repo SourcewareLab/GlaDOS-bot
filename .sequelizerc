@@ -1,7 +1,12 @@
 const path = require('path');
 
+const rootDir = path.resolve(__dirname);
+
+const distDataDir = path.join(rootDir, "dist", "data");
+const srcDataDir = path.join(rootDir, "src", "data");
+
 module.exports = {
-  config: path.resolve('config', 'src/data/database.config.ts'),
-  'models-path': path.resolve('db', 'src/data/models'),
-  'migrations-path': path.resolve('db', 'src/data/migrations'),
+  config: path.join(distDataDir, "config", "database.config.ts"),
+   'models-path': path.join(distDataDir, "models"),
+   'migrations-path': path.join(srcDataDir, "migrations"),
 };
