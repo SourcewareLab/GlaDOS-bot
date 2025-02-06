@@ -10,7 +10,11 @@
     "dev": "tsx watch src/index.ts",
     "deploy-commands": "npm run build && node dist/deploy-commands.js",
     "lint": "eslint . ",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "migrate": "npm run build && sequelize-cli db:migrate",
+    "migrate:undo": "npm run build && sequelize-cli db:migrate:undo",
+    "migrate:undo:all": "npm run build && sequelize-cli db:migrate:undo:all",
+    "migration:create": "npm run build && sequelize-cli migration:generate --name"
   },
   "author": "",
   "license": "ISC",
