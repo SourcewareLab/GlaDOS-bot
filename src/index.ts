@@ -36,6 +36,7 @@ class AppClient extends Client {
 
 const token = process.env.TOKEN;
 const client = new AppClient();
+await client.db.initialize();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

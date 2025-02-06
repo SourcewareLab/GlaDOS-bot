@@ -1,42 +1,43 @@
-import {
-    Column,
-    CreatedAt,
-    Default,
-    DeletedAt,
-    Model,
-    PrimaryKey,
-    Table,
-    UpdatedAt
-} from "sequelize-typescript";
-import {InferAttributes, InferCreationAttributes} from "sequelize";
+import { Model, DataTypes, CreationOptional } from 'sequelize';
+import { InferAttributes, InferCreationAttributes } from 'sequelize';
+import {Sequelize} from "sequelize";
 
-
-@Table({
-    tableName: "users",
-    modelName: "user",
-})
-export default class UserModel extends Model<InferAttributes<UserModel>, InferCreationAttributes<UserModel>>{
-
-    @PrimaryKey
-    @Column
+class UserModel extends Model<InferAttributes<UserModel>, InferCreationAttributes<UserModel>> {
     declare discordId: string;
+    declare username: string;
+    declare score: CreationOptional<number>;
 
-    @Column
-    username!: string;
-
-    @Column
-    @Default(0)
-    score?: number;
-
-    @CreatedAt
-    @Column
-    creationDate?: Date;
-
-    @UpdatedAt
-    @Column
-    updatedOn?: Date;
-
-    @DeletedAt
-    @Column
-    deletionDate?: Date;
+    declare readonly createdAt: CreationOptional<Date>;
+    declare readonly updatedAt: CreationOptional<Date>;
 }
+
+export const initUserModel = (sequelize: Sequelize) => {
+    UserModel.init(
+        {
+            discordId: {
+                type: DataTypes.BIGINT,
+                primaryKey: true,
+                allowNull: false,
+            },
+            username: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            score: {
+                type: DataTypes.INTEGER,
+                defaultValue: 0,
+                allowNull: false,
+            },
+            createdAt: DataTypes.DATE,
+            updatedAt: DataTypes.DATE,
+        },
+        {
+            tableName: 'users',
+            sequelize,
+        }
+    );
+
+    return UserModel;
+};
+
+export default UserModel;
