@@ -1,4 +1,3 @@
-import { ChannelType } from "discord-api-types/v9";
 import { ChatInputCommandInteraction, Client, Collection, Events, GatewayIntentBits, MessageFlags } from "discord.js";
 import 'dotenv/config';
 import fs from 'fs';
@@ -35,7 +34,7 @@ const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {
   const commandsPath = path.join(foldersPath, folder);
-  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js') || file.endsWith('.ts'));
 
   for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
@@ -48,6 +47,20 @@ for (const folder of commandFolders) {
     }
   }
   console.log(client.commands);
+}
+
+// Dynamically load event handlers from the 'events' folder
+// Dont know how it works got it from Google, idk complex File IO in JS
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
+
+for (const file of eventFiles) {
+  import(path.join(eventsPath, file)).then((event) => {
+    if (event.default && event.default.name) {
+      client.on(event.default.name, (...args) => event.default.execute(...args));
+      console.log(`Loaded event: ${event.default.name}`);
+    }
+  }).catch(err => console.error(`Failed to load event ${file}:`, err));
 }
 
 client.once(Events.ClientReady, readyClient => {
@@ -76,37 +89,5 @@ client.on(Events.InteractionCreate, async interaction => {
     }
   }
 });
-
-client.on(Events.GuildMemberAdd, async member => {
-  const channelID = process.env.WELCOME_CHANNEL_ID;
-  const roleID = process.env.NEWCOMER_ROLE_ID;
-
-  if (!channelID || !roleID) {
-    console.log("missing environment variables");
-    return
-  }
-
-  const channel = member.guild.channels.cache.get(channelID);
-  if (!channel) {
-    console.log("Welcome Channel not Found");
-    return
-  }
-
-  const role = member.guild.roles.cache.get(roleID);
-  if (!role) {
-    console.log("Newcomer Role not found");
-    return
-  }
-
-  const message = `Welcome to Sourceware Labs, <@${member.id}>`
-
-  // Message can only be sent if the channel is a Text Channel
-  if (channel.type !== ChannelType.GuildText) {
-    console.log("the welcome channel is not a Text Channel");
-    return
-  }
-
-  await Promise.all([channel.send(message), member.roles.add(role)]);
-})
 
 client.login(token);

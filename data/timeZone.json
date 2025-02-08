@@ -1,0 +1,20 @@
+[
+  {
+    "name": "IST",
+    "isPositive": true,
+    "hours": 5,
+    "minutes": 30
+  },
+  {
+    "name": "EST",
+    "isPositive": false,
+    "hours": 5,
+    "minutes": 0
+  },
+  {
+    "name": "GMT",
+    "isPositive": true,
+    "hours": 0,
+    "minutes": 0
+  }
+]
