@@ -39,7 +39,6 @@ for (const folder of commandFolders) {
       console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" propriety.`);
     }
   }
-  console.log(client.commands);
 }
 
 client.once(Events.ClientReady, readyClient => {
