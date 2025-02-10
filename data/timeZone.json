@@ -1,9 +1,33 @@
 [
   {
-    "name": "IST",
-    "isPositive": true,
-    "hours": 5,
-    "minutes": 30
+    "name": "HST",
+    "isPositive": false,
+    "hours": 10,
+    "minutes": 0
+  },
+  {
+    "name": "AKST",
+    "isPositive": false,
+    "hours": 9,
+    "minutes": 0
+  },
+  {
+    "name": "PST",
+    "isPositive": false,
+    "hours": 8,
+    "minutes": 0
+  },
+  {
+    "name": "MST",
+    "isPositive": false,
+    "hours": 7,
+    "minutes": 0
+  },
+  {
+    "name": "CST",
+    "isPositive": false,
+    "hours": 6,
+    "minutes": 0
   },
   {
     "name": "EST",
@@ -12,9 +36,111 @@
     "minutes": 0
   },
   {
+    "name": "AST",
+    "isPositive": false,
+    "hours": 4,
+    "minutes": 0
+  },
+  {
+    "name": "ART",
+    "isPositive": false,
+    "hours": 3,
+    "minutes": 0
+  },
+  {
     "name": "GMT",
     "isPositive": true,
     "hours": 0,
+    "minutes": 0
+  },
+  {
+    "name": "CET",
+    "isPositive": true,
+    "hours": 1,
+    "minutes": 0
+  },
+  {
+    "name": "EET",
+    "isPositive": true,
+    "hours": 2,
+    "minutes": 0
+  },
+  {
+    "name": "MSK",
+    "isPositive": true,
+    "hours": 3,
+    "minutes": 0
+  },
+  {
+    "name": "IRST",
+    "isPositive": true,
+    "hours": 3,
+    "minutes": 30
+  },
+  {
+    "name": "GST",
+    "isPositive": true,
+    "hours": 4,
+    "minutes": 0
+  },
+  {
+    "name": "PKT",
+    "isPositive": true,
+    "hours": 5,
+    "minutes": 0
+  },
+  {
+    "name": "IST",
+    "isPositive": true,
+    "hours": 5,
+    "minutes": 30
+  },
+  {
+    "name": "BST",
+    "isPositive": true,
+    "hours": 6,
+    "minutes": 0
+  },
+  {
+    "name": "MMT",
+    "isPositive": true,
+    "hours": 6,
+    "minutes": 30
+  },
+  {
+    "name": "ICT",
+    "isPositive": true,
+    "hours": 7,
+    "minutes": 0
+  },
+  {
+    "name": "CNST",
+    "isPositive": true,
+    "hours": 8,
+    "minutes": 0
+  },
+  {
+    "name": "JST",
+    "isPositive": true,
+    "hours": 9,
+    "minutes": 0
+  },
+  {
+    "name": "AEST",
+    "isPositive": true,
+    "hours": 10,
+    "minutes": 0
+  },
+  {
+    "name": "NZST",
+    "isPositive": true,
+    "hours": 12,
+    "minutes": 0
+  },
+  {
+    "name": "LINT",
+    "isPositive": true,
+    "hours": 14,
     "minutes": 0
   }
 ]
