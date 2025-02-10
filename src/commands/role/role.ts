@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, GuildMember, MessageFlags, PermissionFlagsBits, Role, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, GuildMember, MessageFlags, PermissionFlagsBits, Role, SlashCommandBuilder, RESTJSONErrorCodes } from "discord.js";
 
 export const command = {
     data: new SlashCommandBuilder()
@@ -87,17 +87,28 @@ async function add(interaction: ChatInputCommandInteraction) {
         role: role,
         user: user
     }).then(() => {
+
         console.log(`Log: '${role.name}' role has been added to '${user.displayName}' by ${interaction.user.displayName}`)
+        
         interaction.reply({
             content: `'${role.name}' role has been added to '${user.displayName}'`,
             flags: MessageFlags.Ephemeral
         })
     }).catch(async err => {
-        console.error(`Error: Adding a role to a member -> ${err}`)
-        await interaction.reply({
-            content: `Error: ${err}`,
-            flags: MessageFlags.Ephemeral
-        })
+
+        console.error(`Error: Adding '${role.name}' role to a member -> ${err}`)
+        
+        if (err.code === RESTJSONErrorCodes.MissingPermissions) {
+            interaction.reply({
+                content: `Error: '${role.name}' could not be assigned. Tip: the role might have higher permissions than GlaDOS-bot's role`,
+                flags: MessageFlags.Ephemeral
+            })
+        } else {
+            interaction.reply({
+                content: `Error: ${err}`,
+                flags: MessageFlags.Ephemeral
+            })
+        }
     })
 }
 
@@ -128,17 +139,28 @@ async function remove(interaction: ChatInputCommandInteraction) {
         role: role,
         user: user
     }).then(() => {
+
         console.log(`Log: '${role.name}' role has been removed from '${user.displayName}' by ${interaction.user.displayName}`)
+
         interaction.reply({
             content: `'${role.name}' role has been removed from '${user.displayName}'`,
             flags: MessageFlags.Ephemeral
         })
     }).catch(async err => {
-        console.error(`Error: Removing role from member -> ${err}`)
-        await interaction.reply({
-            content: `Error: ${err}`,
-            flags: MessageFlags.Ephemeral
-        })
+
+        console.error(`Error: Removing '${role.name}' role from member -> ${err}`)
+
+        if (err.code === RESTJSONErrorCodes.MissingPermissions) {
+            interaction.reply({
+                content: `Error: '${role.name}' could not be removed. Tip: the role might have higher permissions than GlaDOS-bot's role`,
+                flags: MessageFlags.Ephemeral
+            })    
+        } else {
+            interaction.reply({
+                content: `Error: ${err}`,
+                flags: MessageFlags.Ephemeral
+            })
+        }
     })
 }
 
