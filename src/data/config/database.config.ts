@@ -1,4 +1,3 @@
-
 const username = process.env.DB_USERNAME || "postgres";
 const password = process.env.DB_PASSWORD ?? throwError("DB_PASSWORD");
 const database = process.env.DB_NAME || "glados_dev_db";

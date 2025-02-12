@@ -1,14 +1,20 @@
-import { pgTable, bigint, varchar, integer, timestamp } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  bigint,
+  varchar,
+  integer,
+  timestamp,
+} from "drizzle-orm/pg-core";
 
 /**
  * Defines the `users` table schema.
  */
-export const users = pgTable('users', {
-  discordId: bigint({mode: "bigint"}).primaryKey(),
-  username: varchar('username', { length: 255 }).notNull(),
-  score: integer('score').default(0).notNull(),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
+export const users = pgTable("users", {
+  discordId: bigint({ mode: "bigint" }).primaryKey(),
+  username: varchar("username", { length: 255 }).notNull(),
+  score: integer("score").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 /**

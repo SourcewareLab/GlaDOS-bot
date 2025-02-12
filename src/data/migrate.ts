@@ -1,7 +1,7 @@
-import { AppDatabase } from './database.js';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { AppDatabase } from "./database.js";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import path from "path";
+import { fileURLToPath } from "url";
 
 /**
  * Applies database migrations using Drizzle.
@@ -12,11 +12,11 @@ export async function runMigrations() {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     await migrate(AppDatabase.getInstance().db, {
-      migrationsFolder: path.join(__dirname, 'migrations'),
+      migrationsFolder: path.join(__dirname, "migrations"),
     });
-    console.log('Migrations applied successfully');
+    console.log("Migrations applied successfully");
   } catch (err) {
-    console.error('Error applying migrations:', err);
+    console.error("Error applying migrations:", err);
     process.exit(1);
   }
 }

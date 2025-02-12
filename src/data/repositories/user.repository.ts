@@ -1,19 +1,18 @@
-import { User as DiscordUser} from 'discord.js';
-import {  eq, sql } from 'drizzle-orm';
-import { users, User } from '@/data/models/user.model.js'; // Assuming you've defined the `users` table schema
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { User as DiscordUser } from "discord.js";
+import { eq, sql } from "drizzle-orm";
+import { users, User } from "@/data/models/user.model.js"; // Assuming you've defined the `users` table schema
+import { drizzle } from "drizzle-orm/node-postgres";
 
 /**
  * Repository for managing user-related database operations.
  */
 export class UserRepository {
-
-  readonly db : ReturnType<typeof drizzle>;
+  readonly db: ReturnType<typeof drizzle>;
 
   /**
    * Initializes the repository with a Drizzle instance.
    */
-  constructor(db : ReturnType<typeof drizzle>) {
+  constructor(db: ReturnType<typeof drizzle>) {
     this.db = db;
   }
 
