@@ -1,12 +1,24 @@
-import { Sequelize } from "sequelize";
-import config from "./config/database.config.js";
-import { initUserModel } from "./models/user.model.js";
+import { dbConfig, connectionString } from "./config/database.config.js";
+import {drizzle} from 'drizzle-orm/node-postgres';
 import pg from "pg";
+import { UserRepository } from '@/data/repositories/user.repository.js';
 
+/**
+ * Singleton class for managing the database connection and repositories.
+ * Ensures only one instance of the database is created and shared across the application.
+ */
 export class AppDatabase {
   private static instance: AppDatabase;
-  private readonly sequelize: Sequelize;
+  //drizzle has a verbose type so I'm using this
+  readonly db : ReturnType<typeof drizzle>;
 
+  // Repositories are initialized later on by initialize method
+  userRepository: UserRepository | null = null;
+
+
+  /**
+   * Returns the singleton instance of AppDatabase.
+   */
   public static getInstance(): AppDatabase {
     if (!AppDatabase.instance) {
       AppDatabase.instance = new AppDatabase();
@@ -14,18 +26,22 @@ export class AppDatabase {
     return AppDatabase.instance;
   }
 
+  /**
+   * Prevents direct instantiation. Use `getInstance()` instead.
+   */
   private constructor() {
-    this.sequelize = new Sequelize({
-      ...config,
-      logging: process.env.NODE_ENV !== "production" ? console.log : false,
-    });
+    this.db = drizzle({ connection: connectionString, casing: 'snake_case' });
   }
 
+  /**
+   * Creates the database if it doesn't already exist.
+   * Connects to the default `postgres` database to check and create the target database.
+   */
   private async createDatabaseIfNotExists() {
-    const { database, username, password, host, port } = config;
+    const { username, password, database, host, port } = dbConfig;
 
-    // Connect to postgres database to create new db
-    const client = new pg.Client({
+    // Connect to the default postgres database to create new target db
+    const adminClient  = new pg.Client({
       host,
       port,
       user: username,
@@ -34,56 +50,43 @@ export class AppDatabase {
     });
 
     try {
-      await client.connect();
-      const res = await client.query(
+      await adminClient.connect();
+      const res = await adminClient.query(
         `SELECT 1
                  FROM pg_database
                  WHERE datname = '${database}'`,
       );
 
       if (res.rowCount === 0) {
-        await client.query(`CREATE DATABASE "${database}"`);
+        await adminClient.query(`CREATE DATABASE "${database}"`);
         console.log(`Database ${database} created successfully`);
       }
     } catch (err) {
       console.error("Error creating database:", err);
       throw err;
     } finally {
-      await client.end();
+      await adminClient.end();
     }
   }
 
+  /**
+   * Initializes the database and repositories.
+   */
   public async initialize() {
     try {
       await this.createDatabaseIfNotExists();
-
-      // Initialize models
-      this.initializeModels();
-
-      // Test the connection
-      await this.sequelize.authenticate();
-      console.log("Database connection established successfully");
-
-      await this.syncChanges();
+      this.initializeRepositories();
     } catch (err) {
       console.error("Unable to connect to the database:", err);
       throw err;
     }
   }
 
-  private initializeModels() {
-    initUserModel(this.sequelize);
-    // Add other model initializations here
+  /**
+   * Initializes repositories. Add new repositories here as needed.
+   */
+  private initializeRepositories() {
+    this.userRepository = new UserRepository(this.db);
   }
 
-  private async syncChanges() {
-    if (process.env.NODE_ENV === "development") {
-      // Only sync in development, for production use migrations
-      await this.sequelize.sync({ force: true });
-    }
-  }
-
-  public getSequelize(): Sequelize {
-    return this.sequelize;
-  }
 }

@@ -1,46 +1,22 @@
-import { Model, DataTypes, CreationOptional } from "sequelize";
-import { InferAttributes, InferCreationAttributes } from "sequelize";
-import { Sequelize } from "sequelize";
+import { pgTable, bigint, varchar, integer, timestamp } from 'drizzle-orm/pg-core';
 
-class UserModel extends Model<
-  InferAttributes<UserModel>,
-  InferCreationAttributes<UserModel>
-> {
-  declare discordId: string;
-  declare username: string;
-  declare score: CreationOptional<number>;
+/**
+ * Defines the `users` table schema.
+ */
+export const users = pgTable('users', {
+  discordId: bigint({mode: "bigint"}).primaryKey(),
+  username: varchar('username', { length: 255 }).notNull(),
+  score: integer('score').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
 
-  declare readonly createdAt: CreationOptional<Date>;
-  declare readonly updatedAt: CreationOptional<Date>;
-}
+/**
+ * Type for selecting user records.
+ */
+export type User = typeof users.$inferSelect;
 
-export const initUserModel = (sequelize: Sequelize) => {
-  UserModel.init(
-    {
-      discordId: {
-        type: DataTypes.BIGINT,
-        primaryKey: true,
-        allowNull: false,
-      },
-      username: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      score: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-        allowNull: false,
-      },
-      createdAt: DataTypes.DATE,
-      updatedAt: DataTypes.DATE,
-    },
-    {
-      tableName: "users",
-      sequelize,
-    },
-  );
-
-  return UserModel;
-};
-
-export default UserModel;
+/**
+ * Type for inserting new user records.
+ */
+export type NewUser = typeof users.$inferInsert;

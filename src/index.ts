@@ -4,13 +4,14 @@ import {
   Collection,
   Events,
   GatewayIntentBits,
-  MessageFlags,
-} from "discord.js";
-import "dotenv/config";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath, pathToFileURL } from "url";
-import { AppDatabase } from "./data/database.js";
+  MessageFlags
+} from 'discord.js';
+import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath, pathToFileURL } from 'url';
+import { AppDatabase } from './data/database.js';
+import { runMigrations } from '@/data/migrate.js';
 
 export type AppChatInputCommandInteraction = ChatInputCommandInteraction & {
   client: AppClient;
@@ -41,29 +42,36 @@ class AppClient extends Client {
 }
 
 const token = process.env.TOKEN;
+
+//Yeah we will restructure index.ts later lol
 const client = new AppClient();
 await client.db.initialize();
 
+// for development we should definitely have this, but for production it might make more sense to run it manually
+if (process.env.NODE_ENV === 'development') {
+  await runMigrations();
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const foldersPath = path.join(__dirname, "commands");
+const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {
   const commandsPath = path.join(foldersPath, folder);
   const commandFiles = fs
     .readdirSync(commandsPath)
-    .filter((file) => file.endsWith(".js") || file.endsWith(".ts"));
+    .filter((file) => file.endsWith('.js') || file.endsWith('.ts'));
 
   for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
     const { command } = await import(pathToFileURL(filePath).toString());
 
-    if ("data" in command && "execute" in command) {
+    if ('data' in command && 'execute' in command) {
       client.commands.set(command.data.name, command);
     } else {
       console.log(
-        `[WARNING] The command at ${filePath} is missing a required "data" or "execute" propriety.`,
+        `[WARNING] The command at ${filePath} is missing a required "data" or "execute" propriety.`
       );
     }
   }
@@ -83,7 +91,7 @@ for (const file of eventFiles) {
 }
 
 client.once(Events.ClientReady, (readyClient) => {
-  console.log("Ready!", `Logged in as ${readyClient.user.tag}`);
+  console.log('Ready!', `Logged in as ${readyClient.user.tag}`);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -91,7 +99,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   const typedInteraction = interaction as AppChatInputCommandInteraction;
   const command = typedInteraction.client.commands.get(
-    interaction.commandName,
+    interaction.commandName
   ) as Command;
 
   if (!command) {
@@ -105,16 +113,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
     console.error(error);
     if (interaction.replied || interaction.deferred) {
       await interaction.followUp({
-        content: "There was an error while executing this command!",
-        flags: MessageFlags.Ephemeral,
+        content: 'There was an error while executing this command!',
+        flags: MessageFlags.Ephemeral
       });
     } else {
       await interaction.reply({
-        content: "There was an error while executing this command!",
-        flags: MessageFlags.Ephemeral,
+        content: 'There was an error while executing this command!',
+        flags: MessageFlags.Ephemeral
       });
     }
   }
 });
-
 client.login(token);
