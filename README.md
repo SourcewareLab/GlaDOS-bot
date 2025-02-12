@@ -45,9 +45,10 @@ Example Commit Messages:
     test: add unit test for login function
     chore: update dependencies to latest version
 
-6. **Push and Create a Pull Request:** Once you're ready, push your changes to your forked repository and open a pull request to the `dev` repository.
+6. **Push and Create a Pull Request:** Once you're ready, push your changes to your forked repository and open a pull request to the `dev` repository.\
+   **Note:** open a pull request per feature and don't forget to link the corresponding issue by writing the `#issue-number`.
 
-8. **Follow Up** We will review your changes and may provide feedback. Please address any comments or requested changes, and we’ll merge your contribution!
+7. **Follow Up** We will review your changes and may provide feedback. Please address any comments or requested changes, and we’ll merge your contribution!
 
 ---
 
