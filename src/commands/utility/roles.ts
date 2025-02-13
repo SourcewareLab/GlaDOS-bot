@@ -24,7 +24,7 @@ export const command = {
     const roles = interaction.guild.roles.cache
       .filter((role) => role.id !== interaction.guild!.id)
       // Optionally, sort roles by member count (descending)
-      .sort((a, b) => b.members.size - a.members.size);
+      .sort((a, b) => b.position - a.position);
 
     // Build a display string for the embed.
     const roleList = roles
