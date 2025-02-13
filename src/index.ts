@@ -12,7 +12,14 @@ class ClientWithCommands extends Client {
   commands: Collection<string, unknown>
 
   constructor() {
-    super({ intents: [GatewayIntentBits.Guilds] });
+    super({
+      intents: [
+        GatewayIntentBits.Guilds,
+        // required for Event GuildMemberAdd
+        GatewayIntentBits.GuildPresences,
+        GatewayIntentBits.GuildMembers
+      ]
+    });
     this.commands = new Collection();
   }
 }
@@ -27,7 +34,7 @@ const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {
   const commandsPath = path.join(foldersPath, folder);
-  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js') || file.endsWith('.ts'));
 
   for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
@@ -39,6 +46,19 @@ for (const folder of commandFolders) {
       console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" propriety.`);
     }
   }
+}
+
+// Dynamically load event handlers from the 'events' folder
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js') || file.endsWith('.ts'));
+
+for (const file of eventFiles) {
+  import(path.join(eventsPath, file)).then((event) => {
+    if (event.default && event.default.name) {
+      client.on(event.default.name, (...args) => event.default.execute(...args));
+      console.log(`Loaded event: ${event.default.name}`);
+    }
+  }).catch(err => console.error(`Failed to load event ${file}:`, err));
 }
 
 client.once(Events.ClientReady, readyClient => {
