@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "src/index.ts",
   "type": "module",
+  "engines": {
+    "node": "^22.14.0"
+  },
   "scripts": {
     "build": "rimraf dist && tsc && tsc-alias",
     "start:build": "npm run build && node dist/index.js",
@@ -15,7 +18,7 @@
     "migrate:create": "npm run build && drizzle-kit generate --config \"dist/data/config/drizzle.config.js\" --name",
     "migrate:apply": "tsx scripts/runMigrations.ts"
   },
-  "author": "",
+  "author": "Sourceware Lab",
   "license": "ISC",
   "description": "",
   "dependencies": {
