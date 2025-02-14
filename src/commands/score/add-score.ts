@@ -1,9 +1,11 @@
 import {
+  ChatInputCommandInteraction,
+  Client,
   MessageFlags,
   PermissionFlagsBits,
   SlashCommandBuilder,
 } from "discord.js";
-import { AppChatInputCommandInteraction } from "@/index.js";
+import { AppClient } from "@/index.js";
 
 export const command = {
   data: new SlashCommandBuilder()
@@ -22,7 +24,8 @@ export const command = {
         .setRequired(false),
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
-  execute: async function (interaction: AppChatInputCommandInteraction) {
+  execute: async function (interaction: ChatInputCommandInteraction) {
+    const client = interaction.client as Client & AppClient;
     const user = interaction.options.getUser("user");
     const pointInput = interaction.options.getInteger("amount");
     const point = pointInput ? pointInput : 1;
@@ -43,7 +46,7 @@ export const command = {
       return;
     }
 
-    const repository = interaction.client.db.userRepository;
+    const repository = client.db.userRepository;
 
     if (!repository) {
       await interaction.reply({

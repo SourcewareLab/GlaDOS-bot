@@ -1,5 +1,11 @@
-import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { AppChatInputCommandInteraction } from "@/index.js";
+import {
+  ChatInputCommandInteraction,
+  Client,
+  EmbedBuilder,
+  MessageFlags,
+  SlashCommandBuilder,
+} from "discord.js";
+import { AppClient } from "@/index.js";
 
 export const command = {
   data: new SlashCommandBuilder()
@@ -11,11 +17,12 @@ export const command = {
         .setDescription("User to check score")
         .setRequired(false),
     ),
-  async execute(interaction: AppChatInputCommandInteraction) {
+  async execute(interaction: ChatInputCommandInteraction) {
     const optionsUser = interaction.options.getUser("user");
     const user = optionsUser ? optionsUser : interaction.user;
+    const client = interaction.client as Client & AppClient;
 
-    const repository = interaction.client.db.userRepository;
+    const repository = client.db.userRepository;
 
     if (!repository) {
       await interaction.reply({
