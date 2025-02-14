@@ -1,16 +1,22 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, MessageFlags, EmbedBuilder } from 'discord.js';
+import {
+  ChatInputCommandInteraction,
+  SlashCommandBuilder,
+  MessageFlags,
+  EmbedBuilder,
+} from "discord.js";
 
 //TODO: Score?
 //TODO: Description?
 
 export const command = {
   data: new SlashCommandBuilder()
-    .setName('user')
-    .setDescription('Provides information about the user.')
-    .addUserOption(option =>
-      option.setName("user")
+    .setName("user")
+    .setDescription("Provides information about the user.")
+    .addUserOption((option) =>
+      option
+        .setName("user")
         .setDescription("The username to search for")
-        .setRequired(false)
+        .setRequired(false),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -23,11 +29,11 @@ export const command = {
       return;
     }
 
-    const user = interaction.options.getUser('user') ?? interaction.user;
+    const user = interaction.options.getUser("user") ?? interaction.user;
 
     if (!user) {
-      await interaction.reply("User Not Found")
-      return
+      await interaction.reply("User Not Found");
+      return;
     }
 
     //Finding User in Guild Members
@@ -36,7 +42,7 @@ export const command = {
     // Handling the case where the user is not found and const user is null
     if (!member) {
       await interaction.reply("User Not Found");
-      return
+      return;
     }
 
     // Getting the Account Created Date and Server Joined Date respectively
@@ -45,19 +51,21 @@ export const command = {
 
     // Handling if Server is not joined or a different error occurs
     if (!serverJoined) {
-      await interaction.reply("Could not find user Data")
-      return
+      await interaction.reply("Could not find user Data");
+      return;
     }
 
     //Formatting the Date Difference into y years m months d days
     const DiscordFormattedTime = getDateDifferenceFormatted(createdAt);
-    const ServerFormattedTime = getDateDifferenceFormatted(serverJoined)
+    const ServerFormattedTime = getDateDifferenceFormatted(serverJoined);
 
     //Getting User Avater
     const avatar = user.displayAvatarURL();
 
     // Get all roles (excluding the @everyone role)
-    const roles = member.roles.cache.filter(role => role.name !== '@everyone');;
+    const roles = member.roles.cache.filter(
+      (role) => role.name !== "@everyone",
+    );
 
     // Build a display string for the embed.
     const roleList = roles
@@ -73,21 +81,21 @@ export const command = {
 
       **Joined Server**: ${serverJoined.toDateString()} ~ ${ServerFormattedTime}
 
-      **Roles**: ${roleList}\n\n`.trimStart()
+      **Roles**: ${roleList}\n\n`.trimStart();
 
     const embed = new EmbedBuilder()
       .setTitle(`${member.displayName}`)
       .setDescription(Description || "No Data Found")
       .setThumbnail(avatar)
-      .setColor(0x2f3136) // Neutral embed color; individual role colors will show in the mentions.
+      .setColor(0x2f3136); // Neutral embed color; individual role colors will show in the mentions.
 
     // Reply with the embed and the interactive select menu
     await interaction.reply({
       embeds: [embed],
       allowedMentions: { roles: [] }, // This prevents role pings
     });
-  }
-}
+  },
+};
 
 function getDateDifferenceFormatted(createdAt: Date): string {
   // Getting When User Joined Discord
@@ -100,12 +108,12 @@ function getDateDifferenceFormatted(createdAt: Date): string {
 
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
-  const currentDay = currentDate.getDay()
+  const currentDay = currentDate.getDay();
 
   // The Date Difference
-  let years = currentYear - discordYear
-  let months = currentMonth - discordMonth
-  let days = currentDay - discordDay
+  let years = currentYear - discordYear;
+  let months = currentMonth - discordMonth;
+  let days = currentDay - discordDay;
 
   // Handling Negative Dates
   if (days < 0) {
@@ -119,5 +127,5 @@ function getDateDifferenceFormatted(createdAt: Date): string {
     months += 12;
   }
 
-  return `${years} years ${months} months ${days} days`
+  return `${years} years ${months} months ${days} days`;
 }
