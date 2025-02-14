@@ -82,7 +82,8 @@ const eventsPath = path.join(__dirname, 'events');
 const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js') || file.endsWith('.ts'));
 
 for (const file of eventFiles) {
-  import(path.join(eventsPath, file)).then((event) => {
+  const filePath = path.join(eventsPath, file);
+  import(pathToFileURL(filePath).toString()).then((event) => {
     if (event.default && event.default.name) {
       client.on(event.default.name, (...args) => event.default.execute(...args));
       console.log(`Loaded event: ${event.default.name}`);
