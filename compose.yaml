@@ -3,6 +3,9 @@ services:
     build: 
       context: .
       dockerfile: ./docker/Dockerfile.local
+    container_name: glados-bot
+    image: sourcewarelab/glados:latest
+    pull_policy: never
     environment:
       - NODE_ENV=local
       - TOKEN=${TOKEN}
@@ -23,6 +26,7 @@ services:
     restart: unless-stopped
 
   db:
+    container_name: glados-local-db
     image: postgres:17.3
     environment:
       - POSTGRES_DB=glados-local-db
