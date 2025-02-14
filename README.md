@@ -1,9 +1,49 @@
 # GlaDOS Community Bot
-# 🤖 About
+[![Discord](https://img.shields.io/badge/Discord-Community-blue?logo=discord)](https://discord.gg/X69MUr2DKm)
+![Node.js](https://img.shields.io/badge/Node.js-v18-green?logo=node.js)
+![License](https://img.shields.io/badge/License-ISC-yellow)
 
-The GlaDOS Community Bot is a powerful administration tool designed to streamline server management and enhance the community experience. Built with Node.js and Discord.js, it provides robust functionality for both moderators and members, focusing on efficient server management and community engagement.
+🤖 **About**  
+The GlaDOS Community Bot is a powerful administration tool designed to streamline server management and enhance the community experience. Built with **Node.js** and **Discord.js**, it provides robust functionality for both moderators and members, focusing on efficient server management and community engagement.
 
-# 🚀 How to Contribute
+---
+
+## 🛠️ Setup and Installation
+
+Follow these steps to set up the GlaDOS Community Bot on your local machine or server:
+
+### Prerequisites
+- **Node.js**: Ensure you have Node.js installed (version specified in `.nvmrc` or `package.json`).
+- **Git**: Install Git to clone the repository.
+- **Discord Bot Token**: Create a bot on the [Discord Developer Portal](https://discord.com/developers/applications) and obtain your bot token.
+- **Docker**: Install Docker to run the bot and a postgres instance.
+
+### Installation Steps
+1. **Fork the Repository**: Fork this repo to your personal Github account
+2. **Clone the Repository**:
+   ```bash
+   git clone git@github.com:your-username/GlaDOS-bot.git
+   cd GlaDOS-bot
+3. **Install Dependencies**:
+    ```bash
+    npm install
+4. **Set Up Environment Varialbes**:
+    ```bash
+    cp SAMPLE.env .env
+    ```
+    open the .env file and fill in the required values
+
+5. **Run the Bot**:
+    ```bash
+    docker compose up
+    
+6. **Invite the Bot to your server**:
+    - Use the OAuth2 URL generator on the Discord Developer Portal to create an invite link with the necessary permissions.
+    - Invite the bot to your server using the generated link.
+
+---
+
+## 🚀 How to Contribute
 
 We love contributions from everyone! Whether you're fixing a bug, adding a new feature, or improving documentation, your help is always appreciated. Here's how you can contribute:
 
@@ -60,7 +100,7 @@ Example Commit Messages:
 
 ---
 
-Thank you for being a valuable part of our community! 🎉
+## 💬 Join the Community
 
-Join our Discord community for more discussions and updates!
-<a href="https://discord.gg/X69MUr2DKm" title="Discord server invite link"><img src="https://freelogopng.com/images/all_img/1691730767discord-logo-transparent.png" width="25"></a>
+Have questions or want to discuss the project? Join our Discord community!  
+[![Discord](https://img.shields.io/badge/Discord-Join%20Us-blue?logo=discord)](https://discord.gg/X69MUr2DKm)
