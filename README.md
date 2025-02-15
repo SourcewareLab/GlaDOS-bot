@@ -1,6 +1,6 @@
 # GlaDOS Community Bot
 [![Discord](https://img.shields.io/badge/Discord-Community-blue?logo=discord)](https://discord.gg/X69MUr2DKm)
-![Node.js](https://img.shields.io/badge/Node.js-v18-green?logo=node.js)
+![Node.js](https://img.shields.io/badge/Node.js-v22.14.0-green?logo=node.js)
 ![License](https://img.shields.io/badge/License-ISC-yellow)
 
 🤖 **About**  

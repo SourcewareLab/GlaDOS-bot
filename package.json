@@ -4,7 +4,7 @@
   "main": "src/index.ts",
   "type": "module",
   "engines": {
-    "node": "^22.14.0"
+    "node": "22.14.0"
   },
   "scripts": {
     "build": "rimraf dist && tsc && tsc-alias",
