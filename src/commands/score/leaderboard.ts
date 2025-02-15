@@ -1,5 +1,11 @@
-import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { AppChatInputCommandInteraction } from "@/index.js";
+import {
+  ChatInputCommandInteraction,
+  Client,
+  EmbedBuilder,
+  MessageFlags,
+  SlashCommandBuilder,
+} from "discord.js";
+import { AppClient } from "@/index.js";
 
 export const command = {
   data: new SlashCommandBuilder()
@@ -12,12 +18,13 @@ export const command = {
         .setMaxValue(20)
         .setRequired(false),
     ),
-  async execute(interaction: AppChatInputCommandInteraction) {
+  async execute(interaction: ChatInputCommandInteraction) {
     //default 10
     const limitOption = interaction.options.getInteger("limit");
     const limit = limitOption ? limitOption : 10;
+    const client = interaction.client as Client & AppClient;
 
-    const repository = interaction.client.db.userRepository;
+    const repository = client.db.userRepository;
 
     if (!repository) {
       await interaction.reply({

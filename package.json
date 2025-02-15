@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "main": "src/index.ts",
   "type": "module",
+  "engines": {
+    "node": "22.14.0"
+  },
   "scripts": {
     "build": "rimraf dist && tsc && tsc-alias",
     "start:build": "npm run build && node dist/index.js",
+    "start:nodemon": "nodemon --exec \"tsx\" src/index.ts",
     "start": "tsx src/index.ts",
     "dev": "tsx watch src/index.ts",
     "prettier-format": "prettier --config .prettierrc \"src/**/*.ts\" --write",
@@ -15,7 +19,7 @@
     "migrate:create": "npm run build && drizzle-kit generate --config \"dist/data/config/drizzle.config.js\" --name",
     "migrate:apply": "tsx scripts/runMigrations.ts"
   },
-  "author": "",
+  "author": "Sourceware Lab",
   "license": "ISC",
   "description": "",
   "dependencies": {
@@ -39,6 +43,7 @@
     "eslint": "^9.19.0",
     "eslint-config-prettier": "^10.0.1",
     "globals": "^15.14.0",
+    "nodemon": "^3.1.9",
     "prettier": "^3.4.2",
     "rimraf": "^6.0.1",
     "tsc-alias": "^1.8.10",

@@ -1,0 +1,42 @@
+services:
+  bot:
+    build: 
+      context: .
+      dockerfile: ./docker/Dockerfile.local
+    container_name: glados-bot
+    image: sourcewarelab/glados:latest
+    pull_policy: never
+    environment:
+      - NODE_ENV=local
+      - TOKEN=${TOKEN}
+      - CLIENT_ID=${CLIENT_ID}
+      - GUILD_ID=${GUILD_ID}
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=glados-local-db
+      - DB_HOSTNAME=db
+      - DB_PORT=5432
+      - WELCOME_CHANNEL_ID=${WELCOME_CHANNEL_ID}
+      - NEWCOMER_ROLE_ID=${NEWCOMER_ROLE_ID}
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    container_name: glados-local-db
+    image: postgres:17.3
+    environment:
+      - POSTGRES_DB=glados-local-db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - glados-local-db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  glados-local-db-data:
+  node_modules:

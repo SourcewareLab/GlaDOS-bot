@@ -2,9 +2,7 @@ import {
   ChatInputCommandInteraction,
   Client,
   Collection,
-  Events,
   GatewayIntentBits,
-  MessageFlags,
 } from "discord.js";
 import "dotenv/config";
 import fs from "fs";
@@ -13,28 +11,26 @@ import { fileURLToPath, pathToFileURL } from "url";
 import { AppDatabase } from "./data/database.js";
 import { runMigrations } from "@/data/migrate.js";
 
-export type AppChatInputCommandInteraction = ChatInputCommandInteraction & {
-  client: AppClient;
-};
-
 type Command = {
-  execute(interaction: AppChatInputCommandInteraction): Promise<void>;
+  execute(interaction: ChatInputCommandInteraction): Promise<void>;
 };
 
-class AppClient extends Client {
+export class AppClient extends Client {
   commands: Collection<string, Command>;
   db: AppDatabase;
 
-    constructor() {
-        super({intents: [
-            GatewayIntentBits.Guilds,
-            // required for Event GuildMemberAdd
-            GatewayIntentBits.GuildPresences,
-            GatewayIntentBits.GuildMembers
-          ]});
-        this.commands = new Collection();
-        this.db = AppDatabase.getInstance();
-    }
+  constructor() {
+    super({
+      intents: [
+        GatewayIntentBits.Guilds,
+        // required for Event GuildMemberAdd
+        GatewayIntentBits.GuildPresences,
+        GatewayIntentBits.GuildMembers,
+      ],
+    });
+    this.commands = new Collection();
+    this.db = AppDatabase.getInstance();
+  }
 
   destroy() {
     return super.destroy();
@@ -48,7 +44,7 @@ const client = new AppClient();
 await client.db.initialize();
 
 // for development we should definitely have this, but for production it might make more sense to run it manually
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV === "local") {
   await runMigrations();
 }
 
@@ -78,51 +74,18 @@ for (const folder of commandFolders) {
 }
 
 // Dynamically load event handlers from the 'events' folder
-const eventsPath = path.join(__dirname, 'events');
-const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js') || file.endsWith('.ts'));
+const eventsPath = path.join(__dirname, "events");
+const eventFiles = fs
+  .readdirSync(eventsPath)
+  .filter((file) => file.endsWith(".ts"));
 
 for (const file of eventFiles) {
   const filePath = path.join(eventsPath, file);
-  import(pathToFileURL(filePath).toString()).then((event) => {
-    if (event.default && event.default.name) {
-      client.on(event.default.name, (...args) => event.default.execute(...args));
-      console.log(`Loaded event: ${event.default.name}`);
-    }
-  }).catch(err => console.error(`Failed to load event ${file}:`, err));
+  const { event } = await import(pathToFileURL(filePath).toString());
+  if (event.once) {
+    client.once(event.name, (...args) => event.execute(client, ...args));
+  } else {
+    client.on(event.name, (...args) => event.execute(...args));
+  }
 }
-
-client.once(Events.ClientReady, (readyClient) => {
-  console.log("Ready!", `Logged in as ${readyClient.user.tag}`);
-});
-
-client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
-
-  const typedInteraction = interaction as AppChatInputCommandInteraction;
-  const command = typedInteraction.client.commands.get(
-    interaction.commandName,
-  ) as Command;
-
-  if (!command) {
-    console.error(`No command matching ${interaction.commandName} was found.`);
-    return;
-  }
-
-  try {
-    await command.execute(typedInteraction);
-  } catch (error) {
-    console.error(error);
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp({
-        content: "There was an error while executing this command!",
-        flags: MessageFlags.Ephemeral,
-      });
-    } else {
-      await interaction.reply({
-        content: "There was an error while executing this command!",
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-  }
-});
 client.login(token);
