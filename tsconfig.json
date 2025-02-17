@@ -8,6 +8,7 @@
     "skipLibCheck": true,
     "outDir": "dist",
     "sourceMap": true,
+    "resolveJsonModule": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "noUnusedLocals": true,
@@ -15,9 +16,15 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "paths": {
-      "@/*" : ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"],
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

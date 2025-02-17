@@ -3,19 +3,8 @@ import {
   SlashCommandBuilder,
   MessageFlags,
 } from 'discord.js';
-import fs from "fs";
-import path from 'path';
-import { fileURLToPath } from "url";
-
-import { ConvertTime, DayDiff, TimeConverter, TimeResponse, TimeZone } from './time_conversion.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const filePath = path.resolve(__dirname, "timeZoneData.json")
-const jsonString = fs.readFileSync(filePath, 'utf8');
-
-const timeZoneData: TimeZone[] = JSON.parse(jsonString)
+import { ConvertTime, DayDiff, TimeConverter, TimeResponse } from './modules/time_conversion.js';
+import timeZoneData from './modules/timeZoneData.js';
 
 export const command = {
   data: new SlashCommandBuilder()
