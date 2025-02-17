@@ -9,7 +9,7 @@
   "scripts": {
     "build": "rimraf dist && tsc && tsc-alias",
     "start:build": "npm run build && node dist/index.js",
-    "start:nodemon": "nodemon --exec \"tsx\" src/index.ts",
+    "start:nodemon": "nodemon --exec \"node --inspect=0.0.0.0:9229 -r tsx\" src/index.ts",
     "start": "tsx src/index.ts",
     "dev": "tsx watch src/index.ts",
     "prettier-format": "prettier --config .prettierrc \"src/**/*.ts\" --write",
