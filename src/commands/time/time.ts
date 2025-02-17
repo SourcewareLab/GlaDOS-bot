@@ -4,18 +4,16 @@ import {
   MessageFlags,
 } from 'discord.js';
 import fs from "fs";
+import path from 'path';
+import { fileURLToPath } from "url";
 
-interface TimeZone {
-  name: string;
-  value: {
-    name: string;
-    isPositive: boolean;
-    hours: number;
-    minutes: number;
-  }
-}
+import { ConvertTime, DayDiff, TimeConverter, TimeResponse, TimeZone } from './time_conversion.js';
 
-const jsonString = fs.readFileSync('./timeZoneData.json', 'utf8');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const filePath = path.resolve(__dirname, "timeZoneData.json")
+const jsonString = fs.readFileSync(filePath, 'utf8');
 
 const timeZoneData: TimeZone[] = JSON.parse(jsonString)
 
@@ -129,10 +127,29 @@ async function now(interaction: ChatInputCommandInteraction) {
   const hours = timeNow.getUTCHours();
   const minutes = timeNow.getUTCMinutes();
 
-  const [convertedHours, convertedMinutes] = convertTime(timeZone, hours, minutes, false)
+  const timeConvertData: TimeConverter = {
+    hours: hours,
+    minutes: minutes,
+    timeZoneGiven: timeZoneData.filter((e) => e.value.name === "GMT")[0],
+    timeZoneConvert: timeZone
+  }
+
+  const response: TimeResponse = ConvertTime(timeConvertData)
+
+  let dayStr: string;
+
+  if (response.day === DayDiff.NextDay) {
+    dayStr = "tomorrow"
+  } else if (response.day === DayDiff.PrevDay) {
+    dayStr = "yesterday"
+  } else {
+    dayStr = "today"
+  }
+
+  const message = `It is currently ${getFormatted(response.hours)}:${getFormatted(response.minutes)} ${dayStr} in ${timeConvertData.timeZoneConvert.value.name} time zone.`;
 
   await interaction.reply({
-    content: `It is ${getFormatted(convertedHours)}:${getFormatted(convertedMinutes)} in ${timeZone.name} time zone`,
+    content: message,
     flags: MessageFlags.Ephemeral
   })
 }
@@ -184,49 +201,33 @@ async function convert(interaction: ChatInputCommandInteraction) {
     return
   }
 
-  const [givenHours, givenMinutes] = convertTime(timeZoneGiven, hours, minutes, true)
+  const timeConvertData: TimeConverter = {
+    hours: hours,
+    minutes: minutes,
+    timeZoneGiven: timeZoneGiven,
+    timeZoneConvert: timeZoneConvert
+  }
 
-  const [convertedHours, convertedMinutes] = convertTime(timeZoneConvert, givenHours, givenMinutes, false)
+  const response: TimeResponse = ConvertTime(timeConvertData)
+
+  const dayStr = matchDay(response.day)
+
+  const message = `It is ${getFormatted(response.hours)}:${getFormatted(response.minutes)} ${dayStr} in ${timeConvertData.timeZoneConvert.value.name} time zone when it is ${getFormatted(hours)}:${getFormatted(minutes)} in ${timeConvertData.timeZoneGiven.value.name} time zone.`;
 
   await interaction.reply({
-    content: `It is ${getFormatted(convertedHours)}:${getFormatted(convertedMinutes)} in ${timeZoneConvert.name} when it is ${getFormatted(hours)}:${getFormatted(minutes)} in ${timeZoneGiven.name}`,
+    content: message,
     flags: MessageFlags.Ephemeral
   })
 }
 
-function convertTime(timeZone: TimeZone, hours: number, minutes: number, convertOpposite: boolean) {
-  const timeZoneVal = timeZone.value;
-
-  let isPositive: boolean = timeZoneVal.isPositive;
-
-  // To check if we are converting from XYZ time zone -> GMT instead of vice versa
-  if (convertOpposite) {
-    isPositive = !isPositive
+function matchDay(day: DayDiff) {
+  if (day === DayDiff.NextDay) {
+    return "tomorrow"
+  } else if (day === DayDiff.PrevDay) {
+    return "yesterday"
   }
 
-  if (isPositive) {
-    hours += timeZoneVal.hours
-    minutes += timeZoneVal.minutes
-  } else {
-    hours -= timeZoneVal.hours
-    minutes -= timeZoneVal.minutes
-  }
-
-  if (minutes >= 60) {
-    hours += 1;
-    minutes -= 60;
-  } else if (minutes < 0) {
-    hours -= 1;
-    minutes += 60;
-  }
-
-  if (hours >= 24) {
-    hours -= 24;
-  } else if (hours < 0) {
-    hours += 24;
-  }
-
-  return [hours, minutes]
+  return "today"
 }
 
 // This is to ensure the hours and minutes are in HH:MM format
