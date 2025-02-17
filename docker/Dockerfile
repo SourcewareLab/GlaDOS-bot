@@ -8,5 +8,7 @@ RUN npm install
 
 COPY . .
 
+EXPOSE 9229  # Debug port
+
 CMD ["npm", "run", "start:nodemon"]
 
