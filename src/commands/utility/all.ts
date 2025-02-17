@@ -35,6 +35,23 @@ export const command = {
             .setDescription("the role that should be removed from all users.")
             .setRequired(true)
         )
+    )
+
+    //subcommand for replacing a role from all members that have that role. 
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName("replace")
+        .setDescription("replace a role with another for all users that have it.")
+        .addRoleOption(option =>
+          option.setName("remove_role")
+            .setDescription("the role that should be removed from all users.")
+            .setRequired(true)
+        )
+        .addRoleOption(option =>
+          option.setName("replace_role")
+            .setDescription("the role that should be replaced on all users.")
+            .setRequired(true)
+        )
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -60,7 +77,10 @@ export const command = {
         break;
       case "unassign":
         unassign(interaction, guild)
-        break
+        break;
+      case "replace":
+        replace(interaction, guild)
+        break;
       default:
         await interaction.reply({
           content: "Invalid subcommand.",
@@ -70,6 +90,33 @@ export const command = {
     }
 
   }
+}
+
+async function replace(interaction: ChatInputCommandInteraction, guild: Guild) {
+  const membersArr = Array.from(guild.members.cache.values())
+
+  const removeRole = interaction.options.getRole("remove_role")
+  const replaceRole = interaction.options.getRole("replace_role")
+
+  if (!removeRole || !replaceRole || !(replaceRole instanceof Role) || !(removeRole instanceof Role)) { // need to check if role is actually a Role, because  getRole can return Role | APIRole | null
+    await interaction.reply({
+      content: `given role is invalid.`,
+      flags: MessageFlags.Ephemeral
+    })
+    return
+  }
+
+  const filteredMembers = membersArr.filter(member => member.roles.cache.some(role => role.name === removeRole.name))
+
+  filteredMembers.forEach(member => {
+    member.roles.remove(removeRole);
+    member.roles.add(replaceRole)
+  })
+
+  await interaction.reply({
+    content: `Replaced role @${removeRole.name} with role ${replaceRole.name} for all users`,
+    flags: MessageFlags.Ephemeral
+  })
 }
 
 async function assign(interaction: ChatInputCommandInteraction, guild: Guild) {
@@ -110,7 +157,7 @@ async function assign(interaction: ChatInputCommandInteraction, guild: Guild) {
   filteredMembers.forEach((member) => member.roles.add(role))
 
   await interaction.reply({
-    content: `Assigned all users with role <${role.name}>`,
+    content: `Assigned all users with role @${role.name}`,
     flags: MessageFlags.Ephemeral
   })
 }
@@ -134,7 +181,7 @@ async function unassign(interaction: ChatInputCommandInteraction, guild: Guild) 
   filteredMembers.forEach((member) => member.roles.remove(role))
 
   await interaction.reply({
-    content: `Removed role <@${role.name}> from all users with the respective role.`,
+    content: `Removed role @${role.name} from all users with the respective role.`,
     flags: MessageFlags.Ephemeral
   })
 }
