@@ -3,6 +3,7 @@ import {
   SlashCommandBuilder,
   MessageFlags,
 } from 'discord.js';
+import fs from "fs";
 
 interface TimeZone {
   name: string;
@@ -14,226 +15,9 @@ interface TimeZone {
   }
 }
 
-const timeZoneData: TimeZone[] = [
-  {
-    "name": "Hawaii Standard Time (HST)",
-    "value": {
-      "name": "HST",
-      "isPositive": false,
-      "hours": 10,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Alaska Standard Time (AKST)",
-    "value": {
-      "name": "AKST",
-      "isPositive": false,
-      "hours": 9,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Pacific Standard Time (PST)",
-    "value": {
-      "name": "PST",
-      "isPositive": false,
-      "hours": 8,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Mountain Standard Time (MST)",
-    "value": {
-      "name": "MST",
-      "isPositive": false,
-      "hours": 7,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Central Standard Time (CST)",
-    "value": {
-      "name": "CST",
-      "isPositive": false,
-      "hours": 6,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Eastern Standard Time (EST)",
-    "value": {
-      "name": "EST",
-      "isPositive": false,
-      "hours": 5,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Atlantic Standard Time (AST)",
-    "value": {
-      "name": "AST",
-      "isPositive": false,
-      "hours": 4,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Argentina Time (ART)",
-    "value": {
-      "name": "ART",
-      "isPositive": false,
-      "hours": 3,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Greenwich Mean Time (GMT)",
-    "value": {
-      "name": "GMT",
-      "isPositive": true,
-      "hours": 0,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Central European Time (CET)",
-    "value": {
-      "name": "CET",
-      "isPositive": true,
-      "hours": 1,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Eastern European Time (EET)",
-    "value": {
-      "name": "EET",
-      "isPositive": true,
-      "hours": 2,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Moscow Standard Time (MSK)",
-    "value": {
-      "name": "MSK",
-      "isPositive": true,
-      "hours": 3,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Iran Standard Time (IRST)",
-    "value": {
-      "name": "IRST",
-      "isPositive": true,
-      "hours": 3,
-      "minutes": 30
-    }
-  },
-  {
-    "name": "Gulf Standard Time (GST)",
-    "value": {
-      "name": "GST",
-      "isPositive": true,
-      "hours": 4,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Pakistan Standard Time (PKT)",
-    "value": {
-      "name": "PKT",
-      "isPositive": true,
-      "hours": 5,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Indian Standard Time (IST)",
-    "value": {
-      "name": "IST",
-      "isPositive": true,
-      "hours": 5,
-      "minutes": 30
-    }
-  },
-  {
-    "name": "Bangladesh Standard Time (BST)",
-    "value": {
-      "name": "BST",
-      "isPositive": true,
-      "hours": 6,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Myanmar Time (MMT)",
-    "value": {
-      "name": "MMT",
-      "isPositive": true,
-      "hours": 6,
-      "minutes": 30
-    }
-  },
-  {
-    "name": "Indochina Time (ICT)",
-    "value": {
-      "name": "ICT",
-      "isPositive": true,
-      "hours": 7,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "China Standard Time (CNST)",
-    "value": {
-      "name": "CNST",
-      "isPositive": true,
-      "hours": 8,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Japan Standard Time (JST)",
-    "value": {
-      "name": "JST",
-      "isPositive": true,
-      "hours": 9,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Australian Eastern Standard Time (AEST)",
-    "value": {
-      "name": "AEST",
-      "isPositive": true,
-      "hours": 10,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "New Zealand Standard Time (NZST)",
-    "value": {
-      "name": "NZST",
-      "isPositive": true,
-      "hours": 12,
-      "minutes": 0
-    }
-  },
-  {
-    "name": "Line Islands Time (LINT)",
-    "value": {
-      "name": "LINT",
-      "isPositive": true,
-      "hours": 14,
-      "minutes": 0
-    }
-  }
-]
+const jsonString = fs.readFileSync('./timeZoneData.json', 'utf8');
 
-
+const timeZoneData: TimeZone[] = JSON.parse(jsonString)
 
 export const command = {
   data: new SlashCommandBuilder()
@@ -381,8 +165,8 @@ async function convert(interaction: ChatInputCommandInteraction) {
     return
   }
 
-  const [hours, minutes] = time.split(":");
-  if (!hours || !minutes || time.split(":").length > 2) {
+  const [hoursStr, minutesStr] = time.split(":");
+  if (!hoursStr || !minutesStr || time.split(":").length > 2) {
     await interaction.reply({
       content: "Invalid time argument format, make sure its in HH:MM format.",
       flags: MessageFlags.Ephemeral
@@ -390,12 +174,22 @@ async function convert(interaction: ChatInputCommandInteraction) {
     return
   }
 
-  const [givenHours, givenMinutes] = convertTime(timeZoneGiven, parseInt(hours), parseInt(minutes), true)
+  const hours = parseInt(hoursStr)
+  const minutes = parseInt(minutesStr)
+  if (hours > 23 || hours < 0 || minutes > 59 || minutes < 0) {
+    await interaction.reply({
+      content: "Invalid time argument format, make sure its in HH:MM format.",
+      flags: MessageFlags.Ephemeral
+    })
+    return
+  }
+
+  const [givenHours, givenMinutes] = convertTime(timeZoneGiven, hours, minutes, true)
 
   const [convertedHours, convertedMinutes] = convertTime(timeZoneConvert, givenHours, givenMinutes, false)
 
   await interaction.reply({
-    content: `It is ${getFormatted(convertedHours)}:${getFormatted(convertedMinutes)} in ${timeZoneConvert.name} when it is ${getFormatted(parseInt(hours))}:${getFormatted(parseInt(minutes))} in ${timeZoneGiven.name}`,
+    content: `It is ${getFormatted(convertedHours)}:${getFormatted(convertedMinutes)} in ${timeZoneConvert.name} when it is ${getFormatted(hours)}:${getFormatted(minutes)} in ${timeZoneGiven.name}`,
     flags: MessageFlags.Ephemeral
   })
 }
