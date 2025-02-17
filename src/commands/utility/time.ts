@@ -3,7 +3,6 @@ import {
   SlashCommandBuilder,
   MessageFlags,
 } from 'discord.js';
-import { get } from 'https';
 
 interface TimeZone {
   name: string;
