@@ -3,6 +3,7 @@ import {
   SlashCommandBuilder,
   MessageFlags,
 } from 'discord.js';
+import { get } from 'https';
 
 interface TimeZone {
   name: string;
@@ -348,7 +349,7 @@ async function now(interaction: ChatInputCommandInteraction) {
   const [convertedHours, convertedMinutes] = convertTime(timeZone, hours, minutes, false)
 
   await interaction.reply({
-    content: `It is ${convertedHours}:${convertedMinutes} in ${timeZone.name} time zone`,
+    content: `It is ${getFormatted(convertedHours)}:${getFormatted(convertedMinutes)} in ${timeZone.name} time zone`,
     flags: MessageFlags.Ephemeral
   })
 }
@@ -395,7 +396,7 @@ async function convert(interaction: ChatInputCommandInteraction) {
   const [convertedHours, convertedMinutes] = convertTime(timeZoneConvert, givenHours, givenMinutes, false)
 
   await interaction.reply({
-    content: `It is ${convertedHours}:${convertedMinutes} in ${timeZoneConvert.name} when it is ${hours}:${minutes} in ${timeZoneGiven.name}`,
+    content: `It is ${getFormatted(convertedHours)}:${getFormatted(convertedMinutes)} in ${timeZoneConvert.name} when it is ${getFormatted(parseInt(hours))}:${getFormatted(parseInt(minutes))} in ${timeZoneGiven.name}`,
     flags: MessageFlags.Ephemeral
   })
 }
@@ -433,4 +434,14 @@ function convertTime(timeZone: TimeZone, hours: number, minutes: number, convert
   }
 
   return [hours, minutes]
+}
+
+// This is to ensure the hours and minutes are in HH:MM format
+// otherwise some inputs have time like 8:9 which is supposed to be 08:09
+function getFormatted(time: number) {
+  if (time < 10) {
+    return "0" + `${time}`
+  }
+
+  return `${time}`
 }
