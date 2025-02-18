@@ -31,18 +31,27 @@ export function ConvertTime(timeConverter: TimeConverter) {
   const givenZoneVal = timeConverter.timeZoneGiven.value
   const convertZoneVal = timeConverter.timeZoneConvert.value
 
-  const expressionHours = `${(givenZoneVal.isPositive) ? '+' : '-'} ${givenZoneVal.hours} ${(convertZoneVal.isPositive) ? '+' : '-'} ${convertZoneVal.hours}`
-  const expressionMinutes = `${(givenZoneVal.isPositive) ? '+' : '-'} ${givenZoneVal.minutes} ${(convertZoneVal.isPositive) ? '+' : '-'} ${convertZoneVal.minutes}`
+  //const expressionHours = `${(givenZoneVal.isPositive) ? '+' : '-'} ${givenZoneVal.hours} ${(convertZoneVal.isPositive) ? '+' : '-'} ${convertZoneVal.hours}`
+  //const expressionMinutes = `${(givenZoneVal.isPositive) ? '+' : '-'} ${givenZoneVal.minutes} ${(convertZoneVal.isPositive) ? '+' : '-'} ${convertZoneVal.minutes}`
 
-  const hoursDiff = eval(expressionHours)
-  const minutesDiff = eval(expressionMinutes)
+  //const hoursDiff = eval(expressionHours)
+  //const minutesDiff = eval(expressionMinutes)
 
-  const convertedHours = timeConverter.hours + hoursDiff
-  const connvertedMinutes = timeConverter.minutes + minutesDiff
+  const givenGmtOffset = givenZoneVal.isPositive ? 1 : -1;
+  const convertGmtOffset = convertZoneVal.isPositive ? 1 : -1;
 
-  console.log(convertedHours, connvertedMinutes);
+  const hoursDifference = givenZoneVal.hours * givenGmtOffset - convertZoneVal.hours * convertGmtOffset;
+  const minuteDifference = givenZoneVal.minutes * givenGmtOffset - convertZoneVal.minutes * convertGmtOffset;
 
-  return boundsCheck(convertedHours, connvertedMinutes)
+  const convertedHours = timeConverter.hours - hoursDifference;
+  const convertedMinutes = timeConverter.minutes - minuteDifference;
+
+  //const convertedHours = timeConverter.hours + hoursDiff
+  //const convertedMinutes = timeConverter.minutes + minutesDiff
+
+  console.log(convertedHours, convertedMinutes);
+
+  return boundsCheck(convertedHours, convertedMinutes)
 }
 
 function boundsCheck(hours: number, minutes: number) {
