@@ -4,7 +4,8 @@ import {
   MessageFlags,
   Guild,
   Role,
-  PermissionFlagsBits
+  PermissionFlagsBits,
+  GuildMember
 } from 'discord.js';
 
 export const command = {
@@ -59,9 +60,8 @@ export const command = {
 
     // Ensure the command is executed in a guild
     if (!guild) {
-      await interaction.reply({
+      await interaction.editReply({
         content: "This command can only be used within a server.",
-        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -93,40 +93,51 @@ export const command = {
 }
 
 async function replace(interaction: ChatInputCommandInteraction, guild: Guild) {
+  await interaction.deferReply({
+    flags: MessageFlags.Ephemeral
+  })
   const membersArr = Array.from(guild.members.cache.values())
 
   const removeRole = interaction.options.getRole("remove_role")
   const replaceRole = interaction.options.getRole("replace_role")
 
   if (!removeRole || !replaceRole || !(replaceRole instanceof Role) || !(removeRole instanceof Role)) { // need to check if role is actually a Role, because  getRole can return Role | APIRole | null
-    await interaction.reply({
+    await interaction.editReply({
       content: `given role is invalid.`,
-      flags: MessageFlags.Ephemeral
     })
     return
   }
 
   const filteredMembers = membersArr.filter(member => member.roles.cache.some(role => role.name === removeRole.name))
 
+  const promiseArr: Promise<GuildMember>[] = [];
+
   filteredMembers.forEach(member => {
-    member.roles.remove(removeRole);
-    member.roles.add(replaceRole)
+    promiseArr.push(member.roles.remove(removeRole));
+    promiseArr.push(member.roles.add(replaceRole))
   })
 
-  await interaction.reply({
-    content: `Replaced role @${removeRole.name} with role ${replaceRole.name} for all users`,
-    flags: MessageFlags.Ephemeral
+  await interaction.editReply({
+    content: `Replacing role @${removeRole.name} with @${replaceRole.name}...`,
+  })
+  await Promise.all(promiseArr);
+
+  await interaction.followUp({
+    content: `Successfully Replaced role @${removeRole.name} with role ${replaceRole.name} for all users`,
   })
 }
 
 async function assign(interaction: ChatInputCommandInteraction, guild: Guild) {
+  await interaction.deferReply({
+    flags: MessageFlags.Ephemeral
+  })
+
   const membersArr = Array.from(guild.members.cache.values())
 
   const role = interaction.options.getRole("assign_role")
   if (!role || !(role instanceof Role)) { // need to check if role is actually a Role, because  getRole can return Role | APIRole | null
-    await interaction.reply({
-      content: `given role is invalid.`,
-      flags: MessageFlags.Ephemeral
+    await interaction.editReply({
+      content: `given role is invalid.`
     })
     return
   }
@@ -139,9 +150,8 @@ async function assign(interaction: ChatInputCommandInteraction, guild: Guild) {
 
   const newcomerRole = guild.roles.cache.get(roleID);
   if (!newcomerRole) {
-    await interaction.reply({
+    await interaction.editReply({
       content: `Could not find newcomer role.`,
-      flags: MessageFlags.Ephemeral
     })
     return;
   }
@@ -153,23 +163,33 @@ async function assign(interaction: ChatInputCommandInteraction, guild: Guild) {
     // and its the newcomer role
     return roles.length === 0 || roles.length === 1 && roles[0].name === newcomerRole.name
   })
+  const promiseArr: Promise<GuildMember>[] = [];
 
-  filteredMembers.forEach((member) => member.roles.add(role))
+  filteredMembers.forEach((member) => promiseArr.push(member.roles.add(role)))
 
-  await interaction.reply({
-    content: `Assigned all users with role @${role.name}`,
+  await interaction.editReply({
+    content: `Assigning all users with role @${role.name}...`,
+  })
+
+  await Promise.all(promiseArr);
+
+  await interaction.followUp({
+    content: `Successfully Assigned all users with role @${role.name}`,
     flags: MessageFlags.Ephemeral
   })
 }
 
 async function unassign(interaction: ChatInputCommandInteraction, guild: Guild) {
+  await interaction.deferReply({
+    flags: MessageFlags.Ephemeral
+  })
+
   const membersArr = Array.from(guild.members.cache.values())
 
   const role = interaction.options.getRole("unassign_role")
   if (!role || !(role instanceof Role)) { // need to check if role is actually a Role, because  getRole can return Role | APIRole | null
-    await interaction.reply({
+    await interaction.editReply({
       content: `given role is invalid.`,
-      flags: MessageFlags.Ephemeral
     })
     return
   }
@@ -178,10 +198,18 @@ async function unassign(interaction: ChatInputCommandInteraction, guild: Guild) 
     return Array.from(member.roles.cache.values()).filter(currentRole => role === currentRole)
   })
 
-  filteredMembers.forEach((member) => member.roles.remove(role))
+  const promiseArr: Promise<GuildMember>[] = [];
 
-  await interaction.reply({
-    content: `Removed role @${role.name} from all users with the respective role.`,
+  filteredMembers.forEach((member) => promiseArr.push(member.roles.remove(role)))
+
+  await interaction.editReply({
+    content: "Removing the roles please wait..."
+  })
+
+  await Promise.all(promiseArr);
+
+  await interaction.followUp({
+    content: `Successfully Removed role @${role.name} from all users with the respective role.`,
     flags: MessageFlags.Ephemeral
   })
 }
