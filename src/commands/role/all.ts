@@ -5,58 +5,78 @@ import {
   Guild,
   Role,
   PermissionFlagsBits,
-  GuildMember
-} from 'discord.js';
+  GuildMember,
+  RESTJSONErrorCodes,
+  PermissionsBitField,
+} from "discord.js";
+
+enum Subcommand {
+  Replace = "replace",
+  Assign = "assign",
+  Unassign = "unassign",
+}
+
+//TODO: Add checking for Admin Role
 
 export const command = {
   data: new SlashCommandBuilder()
-    .setName('all')
+    .setName("all")
     .setDescription("assigns or unassigns a role from everyone in the  server.")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 
-    //subcommand for assigning a role to all members that have the newcomer role only or no role at all. 
-    .addSubcommand(subcommand =>
+    //subcommand for assigning a role to all members that have the newcomer role only or no role at all.
+    .addSubcommand((subcommand) =>
       subcommand
         .setName("assign")
-        .setDescription("assign all users that dont have a role or only have the newcomer role with a given role.")
-        .addRoleOption(option =>
-          option.setName("assign_role")
-            .setDescription("the role that should be added to all normal users.")
-            .setRequired(true)
+        .setDescription(
+          "assign all users that dont have a role or only have the newcomer role with a given role.",
         )
+        .addRoleOption((option) =>
+          option
+            .setName("assign_role")
+            .setDescription(
+              "the role that should be added to all normal users.",
+            )
+            .setRequired(true),
+        ),
     )
 
-    //subcommand for unassigning a role to all members that have that role. 
-    .addSubcommand(subcommand =>
+    //subcommand for unassigning a role to all members that have that role.
+    .addSubcommand((subcommand) =>
       subcommand
         .setName("unassign")
         .setDescription("unassign a role from all users that have it.")
-        .addRoleOption(option =>
-          option.setName("unassign_role")
+        .addRoleOption((option) =>
+          option
+            .setName("unassign_role")
             .setDescription("the role that should be removed from all users.")
-            .setRequired(true)
-        )
+            .setRequired(true),
+        ),
     )
 
-    //subcommand for replacing a role from all members that have that role. 
-    .addSubcommand(subcommand =>
+    //subcommand for replacing a role from all members that have that role.
+    .addSubcommand((subcommand) =>
       subcommand
         .setName("replace")
-        .setDescription("replace a role with another for all users that have it.")
-        .addRoleOption(option =>
-          option.setName("remove_role")
+        .setDescription(
+          "replace a role with another for all users that have it.",
+        )
+        .addRoleOption((option) =>
+          option
+            .setName("remove_role")
             .setDescription("the role that should be removed from all users.")
-            .setRequired(true)
+            .setRequired(true),
         )
-        .addRoleOption(option =>
-          option.setName("replace_role")
+        .addRoleOption((option) =>
+          option
+            .setName("replace_role")
             .setDescription("the role that should be replaced on all users.")
-            .setRequired(true)
-        )
+            .setRequired(true),
+        ),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
-    const guild = interaction.guild
+    const guild = interaction.guild;
 
     // Ensure the command is executed in a guild
     if (!guild) {
@@ -66,151 +86,206 @@ export const command = {
       return;
     }
 
-    const subCommand = interaction.options.getSubcommand()
+    //Ensures bot has MANAGE_ROLES permission
+    if (!(guild.members.me as GuildMember).permissions.has(PermissionsBitField.Flags.ManageRoles)) {
+      await interaction.reply({
+        content: "missing bot permission for Managing Roles.",
+        flags: MessageFlags.Ephemeral,
+      }).catch(err => console.log(`error replying to missing bot permission -> ${err}`));
+
+      return
+    }
+
+    const roleID = process.env.ADMIN_ROLE_ID;
+    if (!roleID) {
+      await interaction.reply({
+        content: "missing environment variable for admin role.",
+        flags: MessageFlags.Ephemeral,
+      }).catch(err => console.log(`error replying to missing env vars -> ${err}`));
+
+      return;
+    }
+
+    const adminRole = guild.roles.cache.get(roleID)
+    if (!adminRole) {
+      await interaction.reply({
+        content: "invalid value of ADMIN_ROLE_ID env var.",
+        flags: MessageFlags.Ephemeral,
+      }).catch(err => console.log(`error replying to invalid env vars -> ${err}`));
+
+      return;
+    }
+
+    const subCommand = interaction.options.getSubcommand();
 
     //ensures that all member details are cached
-    await interaction.guild.members.fetch()
+    await interaction.guild.members.fetch();
 
     switch (subCommand) {
       case "assign":
-        assign(interaction, guild)
+        assign(interaction, guild, adminRole);
         break;
       case "unassign":
-        unassign(interaction, guild)
+        unassign(interaction, guild, adminRole);
         break;
       case "replace":
-        replace(interaction, guild)
+        replace(interaction, guild, adminRole);
         break;
       default:
         await interaction.reply({
           content: "Invalid subcommand.",
+          flags: MessageFlags.Ephemeral,
+        });
+        return;
+    }
+  },
+};
+
+async function replace(interaction: ChatInputCommandInteraction, guild: Guild, adminRole: Role) {
+  await interaction.deferReply({
+    flags: MessageFlags.Ephemeral,
+  });
+
+  const removeRole = getRole(interaction, "remove_role");
+  const replaceRole = getRole(interaction, "replace_role");
+
+  await interaction
+    .editReply({
+      content: `Replacing role @${removeRole.name} with @${replaceRole.name}, please wait...`,
+    })
+    .catch(err => console.log(`error replying to replace starting message -> ${err}`))
+
+  const promiseQueue: Promise<[GuildMember, GuildMember]>[] = [];
+
+  guild.members.cache.values()
+    .forEach(async (member) => {
+      if (
+        !(member.roles.cache.some((role) => role.name === removeRole.name || role.name === adminRole.name)) //checks if the user has some role
+      ) {
+        return
+      }
+
+      const memberReplace = Promise.all([member.roles.remove(removeRole), member.roles.add(replaceRole)]) //adds a role to a user and removes previous ones
+        .catch(async (err) => {
+          catchError(err, interaction, Subcommand.Replace, member)
+        })
+
+      promiseQueue.push(memberReplace as Promise<[GuildMember, GuildMember]>); //ensure only non-void promises are evaluated
+    });
+
+  evalPromiseArr(interaction, promiseQueue, `Successfully replaced role @${removeRole.name} to role @${replaceRole.name}.`)
+}
+
+
+async function assign(interaction: ChatInputCommandInteraction, guild: Guild, adminRole: Role) {
+  await interaction.deferReply({
+    flags: MessageFlags.Ephemeral,
+  });
+
+  const role = getRole(interaction, "assign_role");
+
+  await interaction
+    .editReply({
+      content: `Assigning role @${role.name} , please wait...`,
+    })
+    .catch(err => console.log(`error replying to replace starting message -> ${err}`))
+
+  const promiseQueue: Promise<GuildMember>[] = [];
+
+  guild.members.cache.values()
+    .forEach(async (member) => {
+      if (member.roles.cache.some((currRole) => currRole.name === adminRole.name)) { //checks if the user has some role
+        return
+      }
+
+      const memberAssign = member.roles.add(role) //adds a role to a user and removes previous ones
+        .catch(async (err) => {
+          catchError(err, interaction, Subcommand.Assign, member)
+        })
+
+      promiseQueue.push(memberAssign as Promise<GuildMember>); //ensure only non-void promises are evaluated
+    });
+
+  evalPromiseArr(interaction, promiseQueue, `Successfully assigned role @${role.name} to all users.`)
+}
+
+async function unassign(interaction: ChatInputCommandInteraction, guild: Guild, adminRole: Role) {
+  await interaction.deferReply({
+    flags: MessageFlags.Ephemeral,
+  });
+
+  const role = getRole(interaction, "unassign_role");
+
+  await interaction
+    .editReply({
+      content: `Unassigning role @${role.name} , please wait...`,
+    })
+    .catch(err => console.log(`error replying to replace starting message -> ${err}`))
+
+  const promiseQueue: Promise<GuildMember>[] = [];
+
+  guild.members.cache.values()
+    .forEach(async (member) => {
+      if (
+        (!(member.roles.cache.some((currRole) => currRole.name === role.name))
+          || member.roles.cache.some((currRole) => currRole.name === adminRole.name))
+      ) { //checks if the user has some role
+        return
+      }
+
+      const memberAssign = member.roles.remove(role) //removes a role from a user 
+        .catch(async (err) => {
+          catchError(err, interaction, Subcommand.Unassign, member)
+        })
+
+      promiseQueue.push(memberAssign as Promise<GuildMember>); //ensure only non-void promises are evaluated
+    });
+
+  evalPromiseArr(interaction, promiseQueue, `Successfully unassigned role @${role.name} from all users.`)
+}
+
+async function catchError(err: unknown, interaction: ChatInputCommandInteraction, subcommand: Subcommand, member: GuildMember) {
+  console.log(`ERROR: /all command\nmember: ${member}\n${err}`);
+  if (err === RESTJSONErrorCodes.MissingPermissions) {
+    await interaction
+      .editReply({
+        content: "Missing Permissions on bot."
+      })
+      .catch(err => console.log(`error replying to missing permissions exception -> ${err}`))
+
+    return
+  }
+
+  await interaction.editReply({
+    content: `Error ${subcommand}ing role for a member`
+  })
+    .catch(err => console.log(`error replying to ${subcommand} exception -> ${err}`))
+}
+
+function evalPromiseArr(interaction: ChatInputCommandInteraction, promiseQueue: Promise<GuildMember | [GuildMember, GuildMember]>[], replyContent: string) {
+  Promise.all(promiseQueue)
+    .then(async () => {
+      await interaction
+        .followUp({
+          content: replyContent,
           flags: MessageFlags.Ephemeral
         })
-        return
-    }
+        .catch((err) => {
+          console.log(`Error replying to command success -> ${err} `);
 
-  }
+        })
+    })
+    .catch(async (err) => {
+      console.log(`ERROR: /all command \n${err}`);
+
+      await interaction.editReply({
+        content: "Error replacing role for a member"
+      })
+        .catch(err => console.log(`error replying to replace exception -> ${err}`))
+    })
 }
 
-async function replace(interaction: ChatInputCommandInteraction, guild: Guild) {
-  await interaction.deferReply({
-    flags: MessageFlags.Ephemeral
-  })
-  const membersArr = Array.from(guild.members.cache.values())
-
-  const removeRole = interaction.options.getRole("remove_role")
-  const replaceRole = interaction.options.getRole("replace_role")
-
-  if (!removeRole || !replaceRole || !(replaceRole instanceof Role) || !(removeRole instanceof Role)) { // need to check if role is actually a Role, because  getRole can return Role | APIRole | null
-    await interaction.editReply({
-      content: `given role is invalid.`,
-    })
-    return
-  }
-
-  const filteredMembers = membersArr.filter(member => member.roles.cache.some(role => role.name === removeRole.name))
-
-  const promiseArr: Promise<GuildMember>[] = [];
-
-  filteredMembers.forEach(member => {
-    promiseArr.push(member.roles.remove(removeRole));
-    promiseArr.push(member.roles.add(replaceRole))
-  })
-
-  await interaction.editReply({
-    content: `Replacing role @${removeRole.name} with @${replaceRole.name}...`,
-  })
-  await Promise.all(promiseArr);
-
-  await interaction.followUp({
-    content: `Successfully Replaced role @${removeRole.name} with role ${replaceRole.name} for all users`,
-  })
-}
-
-async function assign(interaction: ChatInputCommandInteraction, guild: Guild) {
-  await interaction.deferReply({
-    flags: MessageFlags.Ephemeral
-  })
-
-  const membersArr = Array.from(guild.members.cache.values())
-
-  const role = interaction.options.getRole("assign_role")
-  if (!role || !(role instanceof Role)) { // need to check if role is actually a Role, because  getRole can return Role | APIRole | null
-    await interaction.editReply({
-      content: `given role is invalid.`
-    })
-    return
-  }
-
-  const roleID = process.env.NEWCOMER_ROLE_ID;
-  if (!roleID) {
-    console.log("missing environment variables");
-    return;
-  }
-
-  const newcomerRole = guild.roles.cache.get(roleID);
-  if (!newcomerRole) {
-    await interaction.editReply({
-      content: `Could not find newcomer role.`,
-    })
-    return;
-  }
-
-  const filteredMembers = membersArr.filter((member) => {
-    const roles = Array.from(member.roles.cache.filter((role) => role.name !== "@everyone").values())
-
-    // checks if no. of roles is 0, if yes moves to block, else checks whether there is one role
-    // and its the newcomer role
-    return roles.length === 0 || roles.length === 1 && roles[0].name === newcomerRole.name
-  })
-  const promiseArr: Promise<GuildMember>[] = [];
-
-  filteredMembers.forEach((member) => promiseArr.push(member.roles.add(role)))
-
-  await interaction.editReply({
-    content: `Assigning all users with role @${role.name}...`,
-  })
-
-  await Promise.all(promiseArr);
-
-  await interaction.followUp({
-    content: `Successfully Assigned all users with role @${role.name}`,
-    flags: MessageFlags.Ephemeral
-  })
-}
-
-async function unassign(interaction: ChatInputCommandInteraction, guild: Guild) {
-  await interaction.deferReply({
-    flags: MessageFlags.Ephemeral
-  })
-
-  const membersArr = Array.from(guild.members.cache.values())
-
-  const role = interaction.options.getRole("unassign_role")
-  if (!role || !(role instanceof Role)) { // need to check if role is actually a Role, because  getRole can return Role | APIRole | null
-    await interaction.editReply({
-      content: `given role is invalid.`,
-    })
-    return
-  }
-
-  const filteredMembers = membersArr.filter((member) => {
-    return Array.from(member.roles.cache.values()).filter(currentRole => role === currentRole)
-  })
-
-  const promiseArr: Promise<GuildMember>[] = [];
-
-  filteredMembers.forEach((member) => promiseArr.push(member.roles.remove(role)))
-
-  await interaction.editReply({
-    content: "Removing the roles please wait..."
-  })
-
-  await Promise.all(promiseArr);
-
-  await interaction.followUp({
-    content: `Successfully Removed role @${role.name} from all users with the respective role.`,
-    flags: MessageFlags.Ephemeral
-  })
+function getRole(interaction: ChatInputCommandInteraction, role: string) {
+  return interaction.options.getRole(role) as Role
 }
 
