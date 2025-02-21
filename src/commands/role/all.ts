@@ -16,8 +16,6 @@ enum Subcommand {
   Unassign = "unassign",
 }
 
-//TODO: Add checking for Admin Role
-
 export const command = {
   data: new SlashCommandBuilder()
     .setName("all")
@@ -149,6 +147,10 @@ async function replace(interaction: ChatInputCommandInteraction, guild: Guild, a
   const removeRole = getRole(interaction, "remove_role");
   const replaceRole = getRole(interaction, "replace_role");
 
+  if (await checkIfArgumentIsAdminRole(interaction, [replaceRole, removeRole], adminRole)) {
+    return
+  }
+
   await interaction
     .editReply({
       content: `Replacing role @${removeRole.name} with @${replaceRole.name}, please wait...`,
@@ -184,6 +186,10 @@ async function assign(interaction: ChatInputCommandInteraction, guild: Guild, ad
 
   const role = getRole(interaction, "assign_role");
 
+  if (await checkIfArgumentIsAdminRole(interaction, [role], adminRole)) {
+    return
+  }
+
   await interaction
     .editReply({
       content: `Assigning role @${role.name} , please wait...`,
@@ -215,6 +221,10 @@ async function unassign(interaction: ChatInputCommandInteraction, guild: Guild, 
   });
 
   const role = getRole(interaction, "unassign_role");
+
+  if (await checkIfArgumentIsAdminRole(interaction, [role], adminRole)) {
+    return
+  }
 
   await interaction
     .editReply({
@@ -289,3 +299,22 @@ function getRole(interaction: ChatInputCommandInteraction, role: string) {
   return interaction.options.getRole(role) as Role
 }
 
+async function checkIfArgumentIsAdminRole(interaction: ChatInputCommandInteraction, arr: Role[], adminRole: Role) {
+  let matches: boolean = false;
+
+  arr.forEach((role) => {
+    if (role.name === adminRole.name) {
+      matches = true;
+    }
+  })
+
+  if (matches) {
+    await interaction
+      .editReply({
+        content: `The role provided is an Administrator Role. please provide a different role.`
+      })
+      .catch(err => console.log(`error replying to admin role manipulation -> ${err}`))
+  }
+
+  return matches
+}
