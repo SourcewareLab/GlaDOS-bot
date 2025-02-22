@@ -1,3 +1,4 @@
+import { log } from "console";
 import {
   ChatInputCommandInteraction,
   SlashCommandBuilder,
@@ -9,6 +10,9 @@ import {
   RESTJSONErrorCodes,
   PermissionsBitField,
 } from "discord.js";
+
+//TODO: Bot assigns role to itself
+//TODO: Command Done and Not done is spammy
 
 enum Subcommand {
   Replace = "replace",
@@ -151,26 +155,33 @@ async function replace(interaction: ChatInputCommandInteraction, guild: Guild, a
     return
   }
 
+  let errorFlag = false;
+
   await interaction
     .editReply({
       content: `Replacing role @${removeRole.name} with @${replaceRole.name}, please wait...`,
     })
-    .catch(err => console.log(`error replying to replace starting message -> ${err}`))
+    .catch(err => {
+      console.log(`error replying to replace starting message -> ${err}`)
+      errorFlag = true;
+    })
+
+  if (errorFlag) {
+    return
+  }
 
   const promiseQueue: Promise<[GuildMember, GuildMember]>[] = [];
 
   guild.members.cache.values()
     .forEach(async (member) => {
       if (
-        !(member.roles.cache.some((role) => role.name === removeRole.name || role.name === adminRole.name)) //checks if the user has some role
+        !(member.roles.cache.some((role) => role.name === removeRole.name || role.name === adminRole.name))
+        || member.user.bot//checks if the user has some role
       ) {
         return
       }
 
       const memberReplace = Promise.all([member.roles.remove(removeRole), member.roles.add(replaceRole)]) //adds a role to a user and removes previous ones
-        .catch(async (err) => {
-          catchError(err, interaction, Subcommand.Replace, member)
-        })
 
       promiseQueue.push(memberReplace as Promise<[GuildMember, GuildMember]>); //ensure only non-void promises are evaluated
     });
@@ -190,24 +201,33 @@ async function assign(interaction: ChatInputCommandInteraction, guild: Guild, ad
     return
   }
 
+  let errorFlag = false;
+
   await interaction
     .editReply({
       content: `Assigning role @${role.name} , please wait...`,
     })
-    .catch(err => console.log(`error replying to replace starting message -> ${err}`))
+    .catch(err => {
+      console.log(`error replying to replace starting message -> ${err}`)
+      errorFlag = true;
+    })
+
+  if (errorFlag) {
+    return
+  }
 
   const promiseQueue: Promise<GuildMember>[] = [];
 
   guild.members.cache.values()
     .forEach(async (member) => {
-      if (member.roles.cache.some((currRole) => currRole.name === adminRole.name)) { //checks if the user has some role
+      if (
+        member.roles.cache.some((currRole) => currRole.name === adminRole.name)
+        || member.user.bot
+      ) { //checks if the user has some role
         return
       }
 
       const memberAssign = member.roles.add(role) //adds a role to a user and removes previous ones
-        .catch(async (err) => {
-          catchError(err, interaction, Subcommand.Assign, member)
-        })
 
       promiseQueue.push(memberAssign as Promise<GuildMember>); //ensure only non-void promises are evaluated
     });
@@ -226,11 +246,20 @@ async function unassign(interaction: ChatInputCommandInteraction, guild: Guild, 
     return
   }
 
+  let errorFlag = false;
+
   await interaction
     .editReply({
       content: `Unassigning role @${role.name} , please wait...`,
     })
-    .catch(err => console.log(`error replying to replace starting message -> ${err}`))
+    .catch(err => {
+      console.log(`error replying to replace starting message -> ${err}`)
+      errorFlag = true;
+    })
+
+  if (errorFlag) {
+    return
+  }
 
   const promiseQueue: Promise<GuildMember>[] = [];
 
@@ -239,14 +268,12 @@ async function unassign(interaction: ChatInputCommandInteraction, guild: Guild, 
       if (
         (!(member.roles.cache.some((currRole) => currRole.name === role.name))
           || member.roles.cache.some((currRole) => currRole.name === adminRole.name))
+        || member.user.bot
       ) { //checks if the user has some role
         return
       }
 
       const memberAssign = member.roles.remove(role) //removes a role from a user 
-        .catch(async (err) => {
-          catchError(err, interaction, Subcommand.Unassign, member)
-        })
 
       promiseQueue.push(memberAssign as Promise<GuildMember>); //ensure only non-void promises are evaluated
     });
@@ -254,31 +281,12 @@ async function unassign(interaction: ChatInputCommandInteraction, guild: Guild, 
   evalPromiseArr(interaction, promiseQueue, `Successfully unassigned role @${role.name} from all users.`)
 }
 
-async function catchError(err: unknown, interaction: ChatInputCommandInteraction, subcommand: Subcommand, member: GuildMember) {
-  console.log(`ERROR: /all command\nmember: ${member}\n${err}`);
-  if (err === RESTJSONErrorCodes.MissingPermissions) {
-    await interaction
-      .editReply({
-        content: "Missing Permissions on bot."
-      })
-      .catch(err => console.log(`error replying to missing permissions exception -> ${err}`))
-
-    return
-  }
-
-  await interaction.editReply({
-    content: `Error ${subcommand}ing role for a member`
-  })
-    .catch(err => console.log(`error replying to ${subcommand} exception -> ${err}`))
-}
-
 function evalPromiseArr(interaction: ChatInputCommandInteraction, promiseQueue: Promise<GuildMember | [GuildMember, GuildMember]>[], replyContent: string) {
   Promise.all(promiseQueue)
     .then(async () => {
       await interaction
-        .followUp({
+        .editReply({
           content: replyContent,
-          flags: MessageFlags.Ephemeral
         })
         .catch((err) => {
           console.log(`Error replying to command success -> ${err} `);
@@ -289,7 +297,7 @@ function evalPromiseArr(interaction: ChatInputCommandInteraction, promiseQueue: 
       console.log(`ERROR: /all command \n${err}`);
 
       await interaction.editReply({
-        content: "Error replacing role for a member"
+        content: "Error modifying role for a member"
       })
         .catch(err => console.log(`error replying to replace exception -> ${err}`))
     })
