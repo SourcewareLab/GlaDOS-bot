@@ -2,10 +2,12 @@ services:
   bot:
     build: 
       context: .
-      dockerfile: ./docker/Dockerfile.local
+      dockerfile: docker/Dockerfile.local
     container_name: glados-bot
     image: sourcewarelab/glados:latest
     pull_policy: never
+    ports:
+      - "9229:9229"
     environment:
       - NODE_ENV=local
       - TOKEN=${TOKEN}
