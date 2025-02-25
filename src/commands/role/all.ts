@@ -1,4 +1,3 @@
-import { log } from "console";
 import {
   ChatInputCommandInteraction,
   SlashCommandBuilder,
@@ -7,18 +6,12 @@ import {
   Role,
   PermissionFlagsBits,
   GuildMember,
-  RESTJSONErrorCodes,
   PermissionsBitField,
 } from "discord.js";
 
 //TODO: Bot assigns role to itself
 //TODO: Command Done and Not done is spammy
 
-enum Subcommand {
-  Replace = "replace",
-  Assign = "assign",
-  Unassign = "unassign",
-}
 
 export const command = {
   data: new SlashCommandBuilder()
