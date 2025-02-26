@@ -1,16 +1,6 @@
-import {
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-  MessageFlags,
-  SlashCommandBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder, MessageFlags } from "discord.js";
 
-export const command = {
-  data: new SlashCommandBuilder()
-    .setName("roles")
-    .setDescription("Provides a list of roles for the server."),
-
-  async execute(interaction: ChatInputCommandInteraction) {
+export async function printServerRoles (interaction: ChatInputCommandInteraction) {
     // Ensure the command is executed in a guild
     if (!interaction.guild) {
       await interaction.reply({
@@ -40,11 +30,10 @@ export const command = {
       .setDescription(roleList || "No roles found.")
       .setColor(0x2f3136) // Neutral embed color; individual role colors will show in the mentions.
       .setTimestamp();
-
+      
     // Reply with the embed and the interactive select menu
     await interaction.reply({
-      embeds: [embed],
-      allowedMentions: { roles: [] }, // This prevents role pings
-    });
-  },
-};
+        embeds: [embed],
+        allowedMentions: { roles: [] }, // This prevents role pings
+    })
+  }
