@@ -24,18 +24,19 @@ export default tseslint.config(
         ...globals.node
       }
     },
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            {
-              group: ["src/commands/*/subcommands/*.js"],
-              message: "Please import from the respective subcommands.ts"
-            }
-          ]
-        }
-      ]
-    }
+    // TODO: find a way to restrict commands from import specific subcommands, instead of them import the subcommands.ts file
+    // rules: {
+    //   "no-restricted-imports": [
+    //     "error",
+    //     {
+    //       "patterns": [
+    //         {
+    //           "group": ["src/commands/**/subcommands/*.ts"],
+    //           "message": "Please import from the respective subcommands.ts"
+    //         }
+    //       ]
+    //     }
+    //   ]
+    // }
   }
 );
