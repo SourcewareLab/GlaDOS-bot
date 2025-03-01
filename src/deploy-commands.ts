@@ -35,7 +35,7 @@ for (const folder of commandFolders) {
   }
 }
 
-const rest = new REST().setToken(token!);
+const rest = new REST().setToken(token as string);
 
 (async () => {
   try {
@@ -43,7 +43,7 @@ const rest = new REST().setToken(token!);
       `Started refreshing ${commands.length} application (/) commands.`,
     );
     const data = (await rest.put(
-      Routes.applicationGuildCommands(CLIENT_ID!, GUILD_ID!),
+      Routes.applicationGuildCommands(CLIENT_ID as string, GUILD_ID as string),
       { body: commands },
     )) as string[];
 

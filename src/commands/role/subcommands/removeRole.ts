@@ -1,4 +1,10 @@
-import { ChatInputCommandInteraction, GuildMember, MessageFlags, RESTJSONErrorCodes, Role } from "discord.js";
+import {
+  ChatInputCommandInteraction,
+  GuildMember,
+  MessageFlags,
+  RESTJSONErrorCodes,
+  Role,
+} from "discord.js";
 
 export async function removeRole(interaction: ChatInputCommandInteraction) {
   // Check if client has bot scope
@@ -11,9 +17,8 @@ export async function removeRole(interaction: ChatInputCommandInteraction) {
     return;
   }
 
-    const role = interaction.options.getRole("role") as Role;
-    const user = interaction.options.getMember("user") as GuildMember;
-
+  const role = interaction.options.getRole("role") as Role;
+  const user = interaction.options.getMember("user") as GuildMember;
 
   // Check if user does not have the role already
   if (!user.roles.cache.has(role.id)) {

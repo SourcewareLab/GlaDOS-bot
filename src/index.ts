@@ -11,9 +11,9 @@ import { fileURLToPath, pathToFileURL } from "url";
 import { AppDatabase } from "./data/database.js";
 import { runMigrations } from "@/data/migrate.js";
 
-type Command = {
+interface Command {
   execute(interaction: ChatInputCommandInteraction): Promise<void>;
-};
+}
 
 export class AppClient extends Client {
   commands: Collection<string, Command>;

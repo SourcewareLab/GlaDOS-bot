@@ -5,20 +5,20 @@ export interface TimeZone {
     isPositive: boolean;
     hours: number;
     minutes: number;
-  }
+  };
 }
 
 export interface TimeConverter {
   hours: number;
   minutes: number;
   timeZoneGiven: TimeZone;
-  timeZoneConvert: TimeZone
+  timeZoneConvert: TimeZone;
 }
 
 export enum DayDiff {
   SameDay,
   NextDay,
-  PrevDay
+  PrevDay,
 }
 
 export interface TimeResponse {
@@ -28,8 +28,8 @@ export interface TimeResponse {
 }
 
 export function ConvertTime(timeConverter: TimeConverter) {
-  const givenZoneVal = timeConverter.timeZoneGiven.value
-  const convertZoneVal = timeConverter.timeZoneConvert.value
+  const givenZoneVal = timeConverter.timeZoneGiven.value;
+  const convertZoneVal = timeConverter.timeZoneConvert.value;
 
   //const expressionHours = `${(givenZoneVal.isPositive) ? '+' : '-'} ${givenZoneVal.hours} ${(convertZoneVal.isPositive) ? '+' : '-'} ${convertZoneVal.hours}`
   //const expressionMinutes = `${(givenZoneVal.isPositive) ? '+' : '-'} ${givenZoneVal.minutes} ${(convertZoneVal.isPositive) ? '+' : '-'} ${convertZoneVal.minutes}`
@@ -40,8 +40,12 @@ export function ConvertTime(timeConverter: TimeConverter) {
   const givenGmtOffset = givenZoneVal.isPositive ? 1 : -1;
   const convertGmtOffset = convertZoneVal.isPositive ? 1 : -1;
 
-  const hoursDifference = givenZoneVal.hours * givenGmtOffset - convertZoneVal.hours * convertGmtOffset;
-  const minuteDifference = givenZoneVal.minutes * givenGmtOffset - convertZoneVal.minutes * convertGmtOffset;
+  const hoursDifference =
+    givenZoneVal.hours * givenGmtOffset -
+    convertZoneVal.hours * convertGmtOffset;
+  const minuteDifference =
+    givenZoneVal.minutes * givenGmtOffset -
+    convertZoneVal.minutes * convertGmtOffset;
 
   const convertedHours = timeConverter.hours - hoursDifference;
   const convertedMinutes = timeConverter.minutes - minuteDifference;
@@ -51,7 +55,7 @@ export function ConvertTime(timeConverter: TimeConverter) {
 
   console.log(convertedHours, convertedMinutes);
 
-  return boundsCheck(convertedHours, convertedMinutes)
+  return boundsCheck(convertedHours, convertedMinutes);
 }
 
 function boundsCheck(hours: number, minutes: number) {
@@ -76,8 +80,8 @@ function boundsCheck(hours: number, minutes: number) {
   const response: TimeResponse = {
     hours: hours,
     minutes: minutes,
-    day: DayDiff.SameDay
-  }
+    day: DayDiff.SameDay,
+  };
 
   if (day === -1) {
     response.day = DayDiff.PrevDay;
@@ -87,5 +91,5 @@ function boundsCheck(hours: number, minutes: number) {
     response.day = DayDiff.NextDay;
   }
 
-  return response
+  return response;
 }

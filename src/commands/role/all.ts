@@ -12,7 +12,6 @@ import {
 //TODO: Bot assigns role to itself
 //TODO: Command Done and Not done is spammy
 
-
 export const command = {
   data: new SlashCommandBuilder()
     .setName("all")
@@ -82,31 +81,47 @@ export const command = {
     }
 
     //Ensures bot has MANAGE_ROLES permission
-    if (!(guild.members.me as GuildMember).permissions.has(PermissionsBitField.Flags.ManageRoles)) {
-      await interaction.reply({
-        content: "missing bot permission for Managing Roles.",
-        flags: MessageFlags.Ephemeral,
-      }).catch(err => console.log(`error replying to missing bot permission -> ${err}`));
-
-      return
-    }
-
-    const roleID = process.env.ADMIN_ROLE_ID;
-    if (!roleID) {
-      await interaction.reply({
-        content: "missing environment variable for admin role.",
-        flags: MessageFlags.Ephemeral,
-      }).catch(err => console.log(`error replying to missing env vars -> ${err}`));
+    if (
+      !(guild.members.me as GuildMember).permissions.has(
+        PermissionsBitField.Flags.ManageRoles,
+      )
+    ) {
+      await interaction
+        .reply({
+          content: "missing bot permission for Managing Roles.",
+          flags: MessageFlags.Ephemeral,
+        })
+        .catch((err) =>
+          console.log(`error replying to missing bot permission -> ${err}`),
+        );
 
       return;
     }
 
-    const adminRole = guild.roles.cache.get(roleID)
+    const roleID = process.env.ADMIN_ROLE_ID;
+    if (!roleID) {
+      await interaction
+        .reply({
+          content: "missing environment variable for admin role.",
+          flags: MessageFlags.Ephemeral,
+        })
+        .catch((err) =>
+          console.log(`error replying to missing env vars -> ${err}`),
+        );
+
+      return;
+    }
+
+    const adminRole = guild.roles.cache.get(roleID);
     if (!adminRole) {
-      await interaction.reply({
-        content: "invalid value of ADMIN_ROLE_ID env var.",
-        flags: MessageFlags.Ephemeral,
-      }).catch(err => console.log(`error replying to invalid env vars -> ${err}`));
+      await interaction
+        .reply({
+          content: "invalid value of ADMIN_ROLE_ID env var.",
+          flags: MessageFlags.Ephemeral,
+        })
+        .catch((err) =>
+          console.log(`error replying to invalid env vars -> ${err}`),
+        );
 
       return;
     }
@@ -136,7 +151,11 @@ export const command = {
   },
 };
 
-async function replace(interaction: ChatInputCommandInteraction, guild: Guild, adminRole: Role) {
+async function replace(
+  interaction: ChatInputCommandInteraction,
+  guild: Guild,
+  adminRole: Role,
+) {
   await interaction.deferReply({
     flags: MessageFlags.Ephemeral,
   });
@@ -144,8 +163,14 @@ async function replace(interaction: ChatInputCommandInteraction, guild: Guild, a
   const removeRole = getRole(interaction, "remove_role");
   const replaceRole = getRole(interaction, "replace_role");
 
-  if (await checkIfArgumentIsAdminRole(interaction, [replaceRole, removeRole], adminRole)) {
-    return
+  if (
+    await checkIfArgumentIsAdminRole(
+      interaction,
+      [replaceRole, removeRole],
+      adminRole,
+    )
+  ) {
+    return;
   }
 
   let errorFlag = false;
@@ -154,36 +179,47 @@ async function replace(interaction: ChatInputCommandInteraction, guild: Guild, a
     .editReply({
       content: `Replacing role @${removeRole.name} with @${replaceRole.name}, please wait...`,
     })
-    .catch(err => {
-      console.log(`error replying to replace starting message -> ${err}`)
+    .catch((err) => {
+      console.log(`error replying to replace starting message -> ${err}`);
       errorFlag = true;
-    })
+    });
 
   if (errorFlag) {
-    return
+    return;
   }
 
   const promiseQueue: Promise<[GuildMember, GuildMember]>[] = [];
 
-  guild.members.cache.values()
-    .forEach(async (member) => {
-      if (
-        !(member.roles.cache.some((role) => role.name === removeRole.name || role.name === adminRole.name))
-        || member.user.bot//checks if the user has some role
-      ) {
-        return
-      }
+  guild.members.cache.values().forEach(async (member) => {
+    if (
+      !member.roles.cache.some(
+        (role) => role.name === removeRole.name || role.name === adminRole.name,
+      ) ||
+      member.user.bot //checks if the user has some role
+    ) {
+      return;
+    }
 
-      const memberReplace = Promise.all([member.roles.remove(removeRole), member.roles.add(replaceRole)]) //adds a role to a user and removes previous ones
+    const memberReplace = Promise.all([
+      member.roles.remove(removeRole),
+      member.roles.add(replaceRole),
+    ]); //adds a role to a user and removes previous ones
 
-      promiseQueue.push(memberReplace as Promise<[GuildMember, GuildMember]>); //ensure only non-void promises are evaluated
-    });
+    promiseQueue.push(memberReplace as Promise<[GuildMember, GuildMember]>); //ensure only non-void promises are evaluated
+  });
 
-  evalPromiseArr(interaction, promiseQueue, `Successfully replaced role @${removeRole.name} to role @${replaceRole.name}.`)
+  evalPromiseArr(
+    interaction,
+    promiseQueue,
+    `Successfully replaced role @${removeRole.name} to role @${replaceRole.name}.`,
+  );
 }
 
-
-async function assign(interaction: ChatInputCommandInteraction, guild: Guild, adminRole: Role) {
+async function assign(
+  interaction: ChatInputCommandInteraction,
+  guild: Guild,
+  adminRole: Role,
+) {
   await interaction.deferReply({
     flags: MessageFlags.Ephemeral,
   });
@@ -191,7 +227,7 @@ async function assign(interaction: ChatInputCommandInteraction, guild: Guild, ad
   const role = getRole(interaction, "assign_role");
 
   if (await checkIfArgumentIsAdminRole(interaction, [role], adminRole)) {
-    return
+    return;
   }
 
   let errorFlag = false;
@@ -200,35 +236,43 @@ async function assign(interaction: ChatInputCommandInteraction, guild: Guild, ad
     .editReply({
       content: `Assigning role @${role.name} , please wait...`,
     })
-    .catch(err => {
-      console.log(`error replying to replace starting message -> ${err}`)
+    .catch((err) => {
+      console.log(`error replying to replace starting message -> ${err}`);
       errorFlag = true;
-    })
+    });
 
   if (errorFlag) {
-    return
+    return;
   }
 
   const promiseQueue: Promise<GuildMember>[] = [];
 
-  guild.members.cache.values()
-    .forEach(async (member) => {
-      if (
-        member.roles.cache.some((currRole) => currRole.name === adminRole.name)
-        || member.user.bot
-      ) { //checks if the user has some role
-        return
-      }
+  guild.members.cache.values().forEach(async (member) => {
+    if (
+      member.roles.cache.some((currRole) => currRole.name === adminRole.name) ||
+      member.user.bot
+    ) {
+      //checks if the user has some role
+      return;
+    }
 
-      const memberAssign = member.roles.add(role) //adds a role to a user and removes previous ones
+    const memberAssign = member.roles.add(role); //adds a role to a user and removes previous ones
 
-      promiseQueue.push(memberAssign as Promise<GuildMember>); //ensure only non-void promises are evaluated
-    });
+    promiseQueue.push(memberAssign as Promise<GuildMember>); //ensure only non-void promises are evaluated
+  });
 
-  evalPromiseArr(interaction, promiseQueue, `Successfully assigned role @${role.name} to all users.`)
+  evalPromiseArr(
+    interaction,
+    promiseQueue,
+    `Successfully assigned role @${role.name} to all users.`,
+  );
 }
 
-async function unassign(interaction: ChatInputCommandInteraction, guild: Guild, adminRole: Role) {
+async function unassign(
+  interaction: ChatInputCommandInteraction,
+  guild: Guild,
+  adminRole: Role,
+) {
   await interaction.deferReply({
     flags: MessageFlags.Ephemeral,
   });
@@ -236,7 +280,7 @@ async function unassign(interaction: ChatInputCommandInteraction, guild: Guild, 
   const role = getRole(interaction, "unassign_role");
 
   if (await checkIfArgumentIsAdminRole(interaction, [role], adminRole)) {
-    return
+    return;
   }
 
   let errorFlag = false;
@@ -245,36 +289,44 @@ async function unassign(interaction: ChatInputCommandInteraction, guild: Guild, 
     .editReply({
       content: `Unassigning role @${role.name} , please wait...`,
     })
-    .catch(err => {
-      console.log(`error replying to replace starting message -> ${err}`)
+    .catch((err) => {
+      console.log(`error replying to replace starting message -> ${err}`);
       errorFlag = true;
-    })
+    });
 
   if (errorFlag) {
-    return
+    return;
   }
 
   const promiseQueue: Promise<GuildMember>[] = [];
 
-  guild.members.cache.values()
-    .forEach(async (member) => {
-      if (
-        (!(member.roles.cache.some((currRole) => currRole.name === role.name))
-          || member.roles.cache.some((currRole) => currRole.name === adminRole.name))
-        || member.user.bot
-      ) { //checks if the user has some role
-        return
-      }
+  guild.members.cache.values().forEach(async (member) => {
+    if (
+      !member.roles.cache.some((currRole) => currRole.name === role.name) ||
+      member.roles.cache.some((currRole) => currRole.name === adminRole.name) ||
+      member.user.bot
+    ) {
+      //checks if the user has some role
+      return;
+    }
 
-      const memberAssign = member.roles.remove(role) //removes a role from a user 
+    const memberAssign = member.roles.remove(role); //removes a role from a user
 
-      promiseQueue.push(memberAssign as Promise<GuildMember>); //ensure only non-void promises are evaluated
-    });
+    promiseQueue.push(memberAssign as Promise<GuildMember>); //ensure only non-void promises are evaluated
+  });
 
-  evalPromiseArr(interaction, promiseQueue, `Successfully unassigned role @${role.name} from all users.`)
+  evalPromiseArr(
+    interaction,
+    promiseQueue,
+    `Successfully unassigned role @${role.name} from all users.`,
+  );
 }
 
-function evalPromiseArr(interaction: ChatInputCommandInteraction, promiseQueue: Promise<GuildMember | [GuildMember, GuildMember]>[], replyContent: string) {
+function evalPromiseArr(
+  interaction: ChatInputCommandInteraction,
+  promiseQueue: Promise<GuildMember | [GuildMember, GuildMember]>[],
+  replyContent: string,
+) {
   Promise.all(promiseQueue)
     .then(async () => {
       await interaction
@@ -283,39 +335,47 @@ function evalPromiseArr(interaction: ChatInputCommandInteraction, promiseQueue: 
         })
         .catch((err) => {
           console.log(`Error replying to command success -> ${err} `);
-
-        })
+        });
     })
     .catch(async (err) => {
       console.log(`ERROR: /all command \n${err}`);
 
-      await interaction.editReply({
-        content: "Error modifying role for a member"
-      })
-        .catch(err => console.log(`error replying to replace exception -> ${err}`))
-    })
+      await interaction
+        .editReply({
+          content: "Error modifying role for a member",
+        })
+        .catch((err) =>
+          console.log(`error replying to replace exception -> ${err}`),
+        );
+    });
 }
 
 function getRole(interaction: ChatInputCommandInteraction, role: string) {
-  return interaction.options.getRole(role) as Role
+  return interaction.options.getRole(role) as Role;
 }
 
-async function checkIfArgumentIsAdminRole(interaction: ChatInputCommandInteraction, arr: Role[], adminRole: Role) {
-  let matches: boolean = false;
+async function checkIfArgumentIsAdminRole(
+  interaction: ChatInputCommandInteraction,
+  arr: Role[],
+  adminRole: Role,
+) {
+  let matches = false;
 
   arr.forEach((role) => {
     if (role.name === adminRole.name) {
       matches = true;
     }
-  })
+  });
 
   if (matches) {
     await interaction
       .editReply({
-        content: `The role provided is an Administrator Role. please provide a different role.`
+        content: `The role provided is an Administrator Role. please provide a different role.`,
       })
-      .catch(err => console.log(`error replying to admin role manipulation -> ${err}`))
+      .catch((err) =>
+        console.log(`error replying to admin role manipulation -> ${err}`),
+      );
   }
 
-  return matches
+  return matches;
 }

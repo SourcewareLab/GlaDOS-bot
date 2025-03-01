@@ -1,8 +1,8 @@
-import {
-  ChatInputCommandInteraction
-} from "discord.js";
+import { ChatInputCommandInteraction } from "discord.js";
 
-export async function printServerInfo(interaction: ChatInputCommandInteraction) {
+export async function printServerInfo(
+  interaction: ChatInputCommandInteraction,
+) {
   if (!interaction.guild) {
     await interaction.reply("Something went wrong");
   } else {

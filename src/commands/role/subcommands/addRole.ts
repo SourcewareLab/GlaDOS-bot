@@ -1,5 +1,10 @@
-import { ChatInputCommandInteraction, GuildMember, MessageFlags, RESTJSONErrorCodes, Role } from "discord.js";
-
+import {
+  ChatInputCommandInteraction,
+  GuildMember,
+  MessageFlags,
+  RESTJSONErrorCodes,
+  Role,
+} from "discord.js";
 
 export async function addRole(interaction: ChatInputCommandInteraction) {
   // Check if client has bot scope

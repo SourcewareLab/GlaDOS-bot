@@ -51,9 +51,7 @@ export async function printUserInfo(interaction: ChatInputCommandInteraction) {
   const avatar = user.displayAvatarURL();
 
   // Get all roles (excluding the @everyone role)
-  const roles = member.roles.cache.filter(
-    (role) => role.name !== "@everyone",
-  );
+  const roles = member.roles.cache.filter((role) => role.name !== "@everyone");
 
   // Build a display string for the embed.
   const roleList = roles
@@ -83,7 +81,6 @@ export async function printUserInfo(interaction: ChatInputCommandInteraction) {
     allowedMentions: { roles: [] }, // This prevents role pings
   });
 }
-
 
 function getDateDifferenceFormatted(createdAt: Date): string {
   // Getting When User Joined Discord
