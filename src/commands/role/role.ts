@@ -1,7 +1,15 @@
 import {
   ChatInputCommandInteraction,
-  PermissionFlagsBits,SlashCommandBuilder,} from "discord.js";
-import { addRole, removeRole, addRoleAll, removeRoleAll, replaceRoleAll} from "./subcommands/subcommands.js"
+  PermissionFlagsBits,
+  SlashCommandBuilder,
+} from "discord.js";
+import {
+  addRole,
+  removeRole,
+  addRoleAll,
+  removeRoleAll,
+  replaceRoleAll,
+} from "./subcommands/subcommands.js";
 
 export const command = {
   data: new SlashCommandBuilder()
@@ -111,10 +119,10 @@ export const command = {
         await addRoleAll(interaction);
         break;
       case "remove-all":
-        await removeRoleAll(interaction)
+        await removeRoleAll(interaction);
         break;
       case "replace":
-        await replaceRoleAll(interaction)
+        await replaceRoleAll(interaction);
         break;
     }
   },
