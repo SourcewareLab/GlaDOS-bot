@@ -1,10 +1,7 @@
 import {
   ChatInputCommandInteraction,
-  PermissionFlagsBits,  SlashCommandBuilder,
-} from "discord.js";
-import { addRole } from "./subcommands/addRole.js";
-import { removeRole } from "./subcommands/removeRole.js";
-import { addRoleAll } from "./subcommands/addRoleAll.js";
+  PermissionFlagsBits,SlashCommandBuilder,} from "discord.js";
+import { addRole, removeRole, addRoleAll, removeRoleAll, replaceRoleAll} from "./subcommands/subcommands.js"
 
 export const command = {
   data: new SlashCommandBuilder()
@@ -49,7 +46,7 @@ export const command = {
             .setRequired(true),
         ),
     )
-    
+
     .addSubcommand((subcommand) =>
       subcommand
         .setName("add-all")
@@ -73,7 +70,7 @@ export const command = {
         .setDescription("unassign a role from all users that have it.")
         .addRoleOption((option) =>
           option
-            .setName("unassign_role")
+            .setName("remove_role")
             .setDescription("the role that should be removed from all users.")
             .setRequired(true),
         ),
@@ -82,7 +79,7 @@ export const command = {
     //subcommand for replacing a role from all members that have that role.
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("replace")
+        .setName("replace-all")
         .setDescription(
           "replace a role with another for all users that have it.",
         )
@@ -94,7 +91,7 @@ export const command = {
         )
         .addRoleOption((option) =>
           option
-            .setName("replace_role")
+            .setName("add_role")
             .setDescription("the role that should be replaced on all users.")
             .setRequired(true),
         ),
@@ -105,19 +102,20 @@ export const command = {
 
     switch (subCommand) {
       case "add":
-        await addRole(interaction)
+        await addRole(interaction);
         break;
       case "remove":
         await removeRole(interaction);
         break;
       case "add-all":
-        await addRoleAll(interaction)
+        await addRoleAll(interaction);
         break;
       case "remove-all":
-        console.log("remove-all")
+        await removeRoleAll(interaction)
         break;
       case "replace":
-        console.log("replace")
+        await replaceRoleAll(interaction)
+        break;
     }
   },
 };

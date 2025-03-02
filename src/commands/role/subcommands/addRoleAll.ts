@@ -61,6 +61,6 @@ export async function addRoleAll(interaction: ChatInputCommandInteraction) {
   });
 
   await interaction.editReply({
-    content: `Successfully assigned role @${role.name} from all users.`,
+    content: `Successfully assigned role @${role.name} to all users.`,
   });
 }
