@@ -1,0 +1,57 @@
+name: Glados Main Pipeline
+
+on:
+  push:
+    branches:
+      - test-pipe
+
+env:
+  IMG_NAME: 'glados'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/myapp:${GITHUB_SHA}
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMG_NAME }}:latest
+
+      - name: Deploy to VM
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Pull the latest image
+            docker pull ${{ secrets.DOCKER_USERNAME }}/${{ env.IMG_NAME }}:latest
+            
+            # Stop and remove existing container if it exists
+            docker stop ${{ env.IMG_NAME }} || true
+            docker rm ${{ env.IMG_NAME }} || true
+            
+            # Run the new image
+            docker run -d --name ${{ env.IMG_NAME }} -e TOKEN=${{env.BOT_TOKEN}} \
+            -e CLIENT_ID=${{env.CLIENT_ID}} \
+            -e GUILD_ID=${{env.GUILD_ID}} \
+            -e DB_USERNAME=${{env.DB_USERNAME}} \
+            -e DB_PASSWORD=${{env.DB_PASSWORD}} \
+            -e DB_NAME=${{env.DB_NAME}} \
+            -e DB_HOSTNAME=${{DB_HOSTNAME}} \
+            -e DB_PORT=${{DB_PORT}} \
+            -e WELCOME_CHANNEL_ID=${{WELCOME_CHANNEL_ID}} \
+            -e NEWCOMER_ROLE_ID=${{NEWCOMER_ROLE_ID}} \
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.IMG_NAME }}:latest
