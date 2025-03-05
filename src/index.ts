@@ -9,7 +9,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { AppDatabase } from "./data/database.js";
-import { runMigrations } from "@/data/migrate.js";
+import { runMigrations } from "./data/migrate.js";
 
 interface Command {
   execute(interaction: ChatInputCommandInteraction): Promise<void>;
@@ -77,7 +77,7 @@ for (const folder of commandFolders) {
 const eventsPath = path.join(__dirname, "events");
 const eventFiles = fs
   .readdirSync(eventsPath)
-  .filter((file) => file.endsWith(".ts"));
+  .filter((file) => file.endsWith(".js") || file.endsWith(".ts"));
 
 for (const file of eventFiles) {
   const filePath = path.join(eventsPath, file);

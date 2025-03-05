@@ -1,7 +1,7 @@
 import { dbConfig, connectionString } from "./config/database.config.js";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
-import { UserRepository } from "@/data/repositories/user.repository.js";
+import { UserRepository } from "./repositories/user.repository.js";
 
 /**
  * Singleton class for managing the database connection and repositories.

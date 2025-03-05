@@ -1,6 +1,6 @@
 import { User as DiscordUser } from "discord.js";
 import { eq, sql } from "drizzle-orm";
-import { users, User } from "@/data/models/user.model.js"; // Assuming you've defined the `users` table schema
+import { users, User } from "../models/user.model.js"; // Assuming you've defined the `users` table schema
 import { drizzle } from "drizzle-orm/node-postgres";
 
 /**
