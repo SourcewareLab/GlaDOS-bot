@@ -8,6 +8,8 @@ RUN npm install
 
 COPY . .
 
+ENV NODE_ENV=local
+
 # Expose Debug port
 EXPOSE 9229
 
