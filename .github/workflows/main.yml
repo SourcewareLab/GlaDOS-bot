@@ -3,7 +3,7 @@ name: Glados Main Pipeline
 on:
   push:
     branches:
-      - test-pipe
+      - main
 
 env:
   IMG_NAME: 'glados'
