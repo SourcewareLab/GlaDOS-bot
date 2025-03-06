@@ -1,0 +1,64 @@
+name: Glados Main Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  IMG_NAME: 'glados'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile.prod
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMG_NAME }}:latest
+
+      - name: Deploy to VM
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{secrets.SSH_PORT}}
+          script: |
+            # Pull the latest image
+            docker pull ${{ secrets.DOCKER_USERNAME }}/${{ env.IMG_NAME }}:latest
+            
+            # Stop and remove existing container if it exists
+            docker stop ${{ env.IMG_NAME }} || true
+            docker rm ${{ env.IMG_NAME }} || true
+            
+            # Run the new image
+            docker run -d --name ${{ env.IMG_NAME }} -e TOKEN=${{secrets.BOT_TOKEN}} \
+            -e CLIENT_ID=${{secrets.CLIENT_ID}} \
+            -e GUILD_ID=${{secrets.GUILD_ID}} \
+            -e DB_USERNAME=${{secrets.DB_USERNAME}} \
+            -e DB_PASSWORD=${{secrets.DB_PASSWORD}} \
+            -e DB_NAME=${{secrets.DB_NAME}} \
+            -e DB_HOSTNAME=${{secrets.DB_HOSTNAME}} \
+            -e DB_PORT=${{secrets.DB_PORT}} \
+            -e WELCOME_CHANNEL_ID=${{secrets.WELCOME_CHANNEL_ID}} \
+            -e NEWCOMER_ROLE_ID=${{secrets.NEWCOMER_ROLE_ID}} \
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.IMG_NAME }}:latest

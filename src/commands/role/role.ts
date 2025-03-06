@@ -121,7 +121,7 @@ export const command = {
       case "remove-all":
         await removeRoleAll(interaction);
         break;
-      case "replace":
+      case "replace-all":
         await replaceRoleAll(interaction);
         break;
     }

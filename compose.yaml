@@ -9,7 +9,6 @@ services:
     ports:
       - "9229:9229"
     environment:
-      - NODE_ENV=local
       - TOKEN=${TOKEN}
       - CLIENT_ID=${CLIENT_ID}
       - GUILD_ID=${GUILD_ID}
