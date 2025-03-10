@@ -10,6 +10,7 @@ import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { AppDatabase } from "./data/database.js";
 import { runMigrations } from "./data/migrate.js";
+import { Octokit } from "octokit";
 
 interface Command {
   execute(interaction: ChatInputCommandInteraction): Promise<void>;
@@ -18,6 +19,7 @@ interface Command {
 export class AppClient extends Client {
   commands: Collection<string, Command>;
   db: AppDatabase;
+  octokit: Octokit;
 
   constructor() {
     super({
@@ -30,6 +32,10 @@ export class AppClient extends Client {
     });
     this.commands = new Collection();
     this.db = AppDatabase.getInstance();
+
+    this.octokit = new Octokit({
+      auth: process.env.GITHUB_AUTH_TOKEN as string,
+    })
   }
 
   destroy() {
