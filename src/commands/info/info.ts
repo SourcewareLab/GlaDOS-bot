@@ -3,6 +3,8 @@ import {
   printServerRoles,
   printServerInfo,
   printUserInfo,
+  printProjectInfo,
+  printProjectList
 } from "./subcommands/subcommands.js";
 
 export const command = {
@@ -29,7 +31,24 @@ export const command = {
             .setDescription("The username to search for")
             .setRequired(false),
         ),
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("project")
+        .setDescription("Provides information about a project.")
+        .addStringOption((option) =>
+          option
+            .setName("project")
+            .setDescription("The project to view details for.")
+            .setRequired(true),
+        ),
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("project-list")
+        .setDescription("Provides a list of all project."),
     ),
+
   async execute(interaction: ChatInputCommandInteraction) {
     const subcommand = interaction.options.getSubcommand();
 
@@ -42,6 +61,12 @@ export const command = {
         break;
       case "user":
         await printUserInfo(interaction);
+        break;
+      case "project":
+        await printProjectInfo(interaction);
+        break;
+      case "project-list":
+        await printProjectList(interaction);
         break;
     }
   },
